@@ -1,0 +1,86 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "cc3-storefront",
+  "compatibility_date": "2025-08-15",
+  "compatibility_flags": [
+    // Enable Node.js API
+    // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#nodejs-compatibility-flag
+    "nodejs_compat",
+    // Populate process.env with environment variables
+    // see https://developers.cloudflare.com/workers/configuration/environment-variables/#environment-variables-and-nodejs-compatibility
+    "nodejs_compat_populate_process_env",
+    // Allow to fetch URLs in your app
+    // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#global-fetch-strictly-public
+    "global_fetch_strictly_public",
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "ff3f3e29-01bf-4ffa-9826-3897676844b2",
+      "database_name": "cc3-payload-db",
+      "remote": true,
+    },
+  ],
+  "services": [
+    // The service should match the "name" of your worker
+    // {
+    //   "binding": "WORKER_SELF_REFERENCE",
+    //   "service": "my-app"
+    // },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "cc3-media",
+    },
+    // Create a R2 binding with the binding name "NEXT_INC_CACHE_R2_BUCKET"
+    // {
+    //   "binding": "NEXT_INC_CACHE_R2_BUCKET",
+    //   "bucket_name": "<BUCKET_NAME>",
+    // },
+  ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+    },
+  },
+
+  // Environment variables for production
+  "vars": {
+    "NODE_ENV": "production",
+  },
+
+  // Environment-specific configurations
+  "env": {
+    "production": {
+      "name": "cc3-storefront",
+      "vars": {
+        "NODE_ENV": "production",
+        "MEDUSA_BACKEND_URL": "https://casual-chic.medusajs.app",
+        "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY": "pk_f086d3c7cf6026676f9eef829d75bfcfdc8ca77ae1eeafbb2e06d367938ac456",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_id": "ff3f3e29-01bf-4ffa-9826-3897676844b2",
+          "database_name": "cc3-payload-db",
+          "remote": true,
+        },
+      ],
+      "services": [],
+      "r2_buckets": [
+        {
+          "binding": "R2",
+          "bucket_name": "cc3-media",
+        },
+      ],
+    },
+  },
+}

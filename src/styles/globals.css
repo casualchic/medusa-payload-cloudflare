@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+/* Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+input:focus ~ label,
+input:not(:placeholder-shown) ~ label {
+  transform: translateY(-0.5rem);
+  font-size: 10px;
+  line-height: 1rem;
+  font-weight: 400;
+}
+
+input:focus ~ label {
+  left: 0;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  border: 1px solid #212121;
+  -webkit-text-fill-color: #212121;
+  -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+.content-container {
+  max-width: 1440px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.contrast-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid black;
+  border-radius: 9999px;
+  transition: colors 200ms ease-in;
+}
+
+.contrast-btn:hover {
+  background-color: black;
+  color: white;
+}
+
+.text-xsmall-regular {
+  font-size: 10px;
+  line-height: 1rem;
+  font-weight: 400;
+}
+
+.text-small-regular {
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 400;
+}
+
+.text-small-semi {
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+}
+
+.text-base-regular {
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  font-weight: 400;
+}
+
+.text-base-semi {
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+}
+
+.text-large-regular {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 400;
+}
+
+.text-large-semi {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+}
+
+.text-xl-regular {
+  font-size: 1.5rem;
+  line-height: 36px;
+  font-weight: 400;
+}
+
+.text-xl-semi {
+  font-size: 1.5rem;
+  line-height: 36px;
+  font-weight: 600;
+}
+
+.text-2xl-regular {
+  font-size: 30px;
+  line-height: 48px;
+  font-weight: 400;
+}
+
+.text-2xl-semi {
+  font-size: 30px;
+  line-height: 48px;
+  font-weight: 600;
+}
+
+.text-3xl-regular {
+  font-size: 32px;
+  line-height: 44px;
+  font-weight: 400;
+}
+
+.text-3xl-semi {
+  font-size: 32px;
+  line-height: 44px;
+  font-weight: 600;
+}
