@@ -58,20 +58,32 @@ A modern e-commerce storefront built with Next.js, Payload CMS, and Medusa, depl
 
 ### Production Deployment
 
-1. **Build the application:**
+#### Manual Deployment
+```bash
+CLOUDFLARE_ENV=production pnpm run deploy:app
+```
+
+#### GitHub Actions CI/CD (Recommended)
+1. **Set up GitHub repository:**
    ```bash
-   pnpm build
+   git remote add origin https://github.com/yourusername/cc3-storefront-cloudflare.git
+   git push -u origin main
    ```
 
-2. **Deploy to Cloudflare:**
-   ```bash
-   pnpm deploy
-   ```
+2. **Configure GitHub Secrets:**
+   - Go to your GitHub repository → Settings → Secrets and variables → Actions
+   - Add the following secrets:
+     - `CLOUDFLARE_API_TOKEN`: Your Cloudflare API token
+     - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
 
-   This will:
-   - Run database migrations
-   - Build the application
-   - Deploy to Cloudflare Workers
+3. **Automatic deployments:**
+   - Push to `main` branch triggers automatic deployment
+   - Pull requests trigger tests without deployment
+
+#### Current Live URLs
+- **Storefront**: https://cc3-storefront.ian-rothfuss.workers.dev/us
+- **Admin Panel**: https://cc3-storefront.ian-rothfuss.workers.dev/admin
+- **Medusa Backend**: https://casual-chic.medusajs.app
 
 ## 🧪 How to Test
 
@@ -154,6 +166,33 @@ The project is configured to work with:
 - ⚡ **Edge Performance**: Deployed on Cloudflare's global network
 - 🔒 **Secure**: Built-in authentication and authorization
 - 📊 **Admin Panel**: Payload CMS for content management
+
+## ✅ Current Status
+
+**🎉 FULLY FUNCTIONAL DEPLOYMENT**
+- ✅ **Storefront**: Working with Medusa integration
+- ✅ **Admin Panel**: Payload CMS fully functional
+- ✅ **Database**: D1 SQLite database connected
+- ✅ **Storage**: R2 bucket for media assets
+- ✅ **Environment**: Properly configured for production
+
+## 🔑 Key Learnings
+
+### Critical Discovery: Publishable Keys vs Secrets
+- **❌ WRONG**: Treating publishable keys as Cloudflare secrets
+- **✅ CORRECT**: Configure as regular environment variables in `wrangler.jsonc`
+- **Why**: Publishable keys are meant to be public and accessible to client-side code
+
+### Environment Variable Access
+- Required `nodejs_compat_populate_process_env` flag in Cloudflare Workers
+- Temporary solution: Hardcoded publishable keys in data files
+- Next step: Investigate proper runtime environment variable access
+
+### Database Binding Configuration
+- Database binding names must match between `wrangler.jsonc` and `payload.config.ts`
+- Current: `"DB"` binding for D1 database
+
+📖 **See [DEPLOYMENT_LEARNINGS.md](./DEPLOYMENT_LEARNINGS.md) for comprehensive documentation**
 
 ## 🚀 Deployment
 
