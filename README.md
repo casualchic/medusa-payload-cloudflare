@@ -225,3 +225,5 @@ For support and questions:
 ---
 
 Built with ❤️ by Ian Rothfuss and Casual Chic Commerce LLC
+
+<!-- CI/CD Test - Automated deployment via GitHub Actions -->
