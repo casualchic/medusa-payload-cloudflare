@@ -10,6 +10,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     
+    env:
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://casual-chic.medusajs.app
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_f086d3c7cf6026676f9eef829d75bfcfdc8ca77ae1eeafbb2e06d367938ac456
+      NODE_ENV: production
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
