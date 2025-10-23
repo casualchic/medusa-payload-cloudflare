@@ -6,13 +6,8 @@ import { SortOptions } from '@modules/store/components/refinement-list/sort-prod
 import { getAuthHeaders, getCacheOptions } from './cookies'
 import { getRegion, retrieveRegion } from './regions'
 
-const IS_PRODUCTION = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
-const MEDUSA_BACKEND_URL = IS_PRODUCTION
-  ? process.env.MEDUSA_BACKEND_URL ||
-    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
-    'https://casual-chic.medusajs.app'
-  : 'https://casual-chic.medusajs.app'
-const PUBLISHABLE_KEY = 'pk_f086d3c7cf6026676f9eef829d75bfcfdc8ca77ae1eeafbb2e06d367938ac456'
+const MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 
 export const listProducts = async ({
   pageParam = 1,

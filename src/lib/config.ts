@@ -1,6 +1,6 @@
 import Medusa from "@medusajs/js-sdk"
 
-const MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "https://casual-chic.medusajs.app"
+const MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 
 export const sdk = new Medusa({
   baseUrl: MEDUSA_BACKEND_URL,
