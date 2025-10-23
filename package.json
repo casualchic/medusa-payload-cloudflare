@@ -57,7 +57,6 @@
     "@stripe/stripe-js": "^8.1.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "awilix": "^8.0.1",
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
     "graphql": "^16.11.0",
@@ -119,8 +118,7 @@
     "react-dom": "19.2.0",
     "@types/node": "^22.5.4",
     "@eslint/plugin-kit": "^0.4.0",
-    "pino": "^10.0.0",
-    "awilix": "^8.0.1"
+    "pino": "^10.0.0"
   },
   "overrides": {
     "yjs": "^13.6.0",
@@ -132,8 +130,7 @@
     "react-dom": "19.2.0",
     "@types/node": "^22.5.4",
     "@eslint/plugin-kit": "^0.4.0",
-    "pino": "^10.0.0",
-    "awilix": "^8.0.1"
+    "pino": "^10.0.0"
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0",
