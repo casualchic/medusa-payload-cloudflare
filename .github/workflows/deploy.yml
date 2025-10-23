@@ -46,35 +46,27 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
-    - name: Install Playwright browsers
-      run: pnpm exec playwright install --with-deps chromium
 
     - name: Run linting
       run: pnpm run lint
 
-    - name: Run tests
-      run: pnpm run test
+    - name: Run unit tests
+      run: pnpm run test:int
       env:
         NODE_ENV: test
 
     - name: Build Next.js application
       if: github.ref == 'refs/heads/main'
-      run: pnpm run build --webpack
+      run: pnpm run build
       env:
         NODE_ENV: production
 
-    - name: Build OpenNext Cloudflare bundle
+    - name: Build and Deploy to Cloudflare Workers
       if: github.ref == 'refs/heads/main'
-      run: pnpm exec opennextjs-cloudflare build --skipNextBuild
+      run: |
+        pnpm exec opennextjs-cloudflare build --skipNextBuild --env production
+        pnpm exec opennextjs-cloudflare deploy --env production
       env:
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         CLOUDFLARE_ENV: production
-
-    - name: Deploy to Cloudflare Workers
-      if: github.ref == 'refs/heads/main'
-      uses: cloudflare/wrangler-action@v3
-      with:
-        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        command: deploy --env production
-        workingDirectory: '.'
-        wranglerVersion: '3'

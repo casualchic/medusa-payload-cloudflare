@@ -27,11 +27,12 @@ function checkEnvVariables() {
    * - GitHub Actions provides env vars at build time and deploys via wrangler
    * - Runtime vars are defined in wrangler.jsonc env.production section
    *
-   * Skip validation if in CI without vars (indicates Cloudflare Pages auto-build
-   * which we don't use - deployment is via GitHub Actions workflow)
+   * Skip validation for Cloudflare Pages auto-builds (if accidentally enabled).
+   * CF_PAGES is set by Cloudflare during Pages builds.
+   * See: https://developers.cloudflare.com/pages/configuration/build-configuration/
    */
-  if (process.env.CI === 'true' && !process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY) {
-    console.log(c.yellow('⚠️  CI build without env vars detected - skipping validation (vars defined in wrangler.jsonc for runtime)'))
+  if (process.env.CF_PAGES === '1') {
+    console.log(c.yellow('⚠️  Cloudflare Pages build detected - skipping validation (deployment via GitHub Actions instead)'))
     return
   }
 
