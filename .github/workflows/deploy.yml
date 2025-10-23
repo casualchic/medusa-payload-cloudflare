@@ -70,6 +70,8 @@ jobs:
       run: pnpm exec cross-env NODE_OPTIONS="--no-deprecation --max-old-space-size=8000" next build --webpack
       env:
         NODE_ENV: production
+        NEXT_PHASE: phase-production-build
+        PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
 
     - name: Build and Deploy to Cloudflare Workers
       if: github.ref == 'refs/heads/main'

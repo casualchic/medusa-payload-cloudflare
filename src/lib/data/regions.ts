@@ -108,8 +108,8 @@ export const getRegion = async (countryCode: string) => {
       countryCode: String(countryCode).substring(0, 10) // Limit length and convert to string
     })
     return regions[0]
-  } catch (e: any) {
-    console.error('Error in getRegion:', e)
+  } catch (e: unknown) {
+    console.error('Error in getRegion:', e instanceof Error ? e.message : String(e))
 
     // Return a fallback region when backend is not accessible
     return {

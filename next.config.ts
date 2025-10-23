@@ -13,15 +13,14 @@ const nextConfig = {
     },
   },
   typescript: {
-    ignoreBuildErrors: true,
+    // Only ignore type errors in development for faster iteration
+    // Production builds should catch type errors
+    ignoreBuildErrors: process.env.NODE_ENV === 'development',
   },
-  // Turbopack is default in Next.js 16 but incompatible with Payload CMS
-  // due to esbuild binary parsing issues in drizzle-kit
-  // Use --webpack flag for development and builds:
-  //   pnpm dev --webpack
-  //   pnpm build --webpack
+  // Turbopack configuration for Payload CMS compatibility
   turbopack: {},
-  // Exclude problematic packages from bundling
+  // Exclude packages that contain binaries or need special handling
+  // Note: Platform-specific @esbuild packages are auto-externalized, only need base packages
   serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild'],
   images: {
     remotePatterns: [

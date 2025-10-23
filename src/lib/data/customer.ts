@@ -218,7 +218,7 @@ export const addCustomerAddress = async (
 
   return sdk.store.customer
     .createAddress(address, {}, headers)
-    .then(async ({ customer }) => {
+    .then(async () => {
       const customerCacheTag = await getCacheTag('customers')
       await revalidateTag(customerCacheTag)
       return { success: true, error: null }
@@ -248,7 +248,7 @@ export const deleteCustomerAddress = async (addressId: string): Promise<void> =>
 export const updateCustomerAddress = async (
   currentState: Record<string, unknown>,
   formData: FormData,
-): Promise<any> => {
+): Promise<{ success: boolean; error?: string } | HttpTypes.StoreCustomer> => {
   const addressId = (currentState.addressId as string) || (formData.get('addressId') as string)
 
   if (!addressId) {

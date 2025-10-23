@@ -11,5 +11,6 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/int/**/*.int.spec.ts'],
     globals: true,
+    hookTimeout: 30000, // Increase hook timeout for slow Payload init
   },
 })
