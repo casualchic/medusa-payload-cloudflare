@@ -1,37 +1,56 @@
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
+import tsParser from '@typescript-eslint/parser'
+import tsPlugin from '@typescript-eslint/eslint-plugin'
+import reactPlugin from 'eslint-plugin-react'
+import reactHooksPlugin from 'eslint-plugin-react-hooks'
+import nextPlugin from '@next/eslint-plugin-next'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-})
-
+// ESLint flat config for Next.js 16
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
-    rules: {
-      '@typescript-eslint/ban-ts-comment': 'warn',
-      '@typescript-eslint/no-empty-object-type': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          vars: 'all',
-          args: 'after-used',
-          ignoreRestSiblings: false,
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          destructuredArrayIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^(_|ignore)',
-        },
-      ],
-    },
+    ignores: [
+      '.next/**',
+      'node_modules/**',
+      '.conductor/**',
+      'dist/**',
+      'build/**',
+      '.open-next/**',
+      'cloudflare-env.d.ts',
+    ],
   },
   {
-    ignores: ['.next/'],
+    files: ['**/*.{js,jsx,ts,tsx,mjs}'],
+    languageOptions: {
+      parser: tsParser,
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      'react': reactPlugin,
+      'react-hooks': reactHooksPlugin,
+      '@next/next': nextPlugin,
+    },
+    rules: {
+      // TypeScript rules
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'warn',
+
+      // React rules
+      'react/react-in-jsx-scope': 'off', // Not needed in Next.js
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+
+      // General rules
+      'no-unused-vars': 'off', // Use TypeScript version
+      'no-console': 'off',
+      'prefer-const': 'warn',
+    },
   },
 ]
 
