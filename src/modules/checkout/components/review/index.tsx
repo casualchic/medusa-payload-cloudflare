@@ -1,11 +1,12 @@
 "use client"
 
 import { Heading, Text, clx } from "@medusajs/ui"
+import { HttpTypes } from "@medusajs/types"
 
 import PaymentButton from "../payment-button"
 import { useSearchParams } from "next/navigation"
 
-const Review = ({ cart }: { cart: any }) => {
+const Review = ({ cart }: { cart: HttpTypes.StoreCart }) => {
   const searchParams = useSearchParams()
 
   const isOpen = searchParams.get("step") === "review"

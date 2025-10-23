@@ -9,7 +9,7 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
-  const order = await retrieveOrder(params.id).catch(() => null)
+  const order = await retrieveOrder(params.id).catch((): null => null)
 
   if (!order) {
     notFound()
@@ -23,7 +23,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function OrderDetailPage(props: Props) {
   const params = await props.params
-  const order = await retrieveOrder(params.id).catch(() => null)
+  const order = await retrieveOrder(params.id).catch((): null => null)
 
   if (!order) {
     notFound()

@@ -15,7 +15,8 @@ export function sortProducts(
   products: HttpTypes.StoreProduct[],
   sortBy: SortOptions
 ): HttpTypes.StoreProduct[] {
-  let sortedProducts = products as MinPricedProduct[]
+  // Create a shallow copy to avoid mutating the input array
+  const sortedProducts = [...products] as MinPricedProduct[]
 
   if (["price_asc", "price_desc"].includes(sortBy)) {
     // Precompute the minimum price for each product
