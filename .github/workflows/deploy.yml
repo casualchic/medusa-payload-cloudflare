@@ -57,10 +57,9 @@ jobs:
 
     - name: Build Next.js application
       if: github.ref == 'refs/heads/main'
-      run: pnpm run build
+      run: pnpm exec cross-env NODE_OPTIONS="--no-deprecation --max-old-space-size=8000" next build --webpack
       env:
         NODE_ENV: production
-        TURBOPACK: "0"
 
     - name: Build and Deploy to Cloudflare Workers
       if: github.ref == 'refs/heads/main'
