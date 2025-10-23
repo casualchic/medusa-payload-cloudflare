@@ -70,7 +70,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         canonical: `${params.category.join('/')}`,
       },
     }
-  } catch (_error) {
+  } catch {
     notFound()
   }
 }
