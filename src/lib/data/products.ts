@@ -9,6 +9,14 @@ import { getRegion, retrieveRegion } from './regions'
 const MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 
+if (!MEDUSA_BACKEND_URL) {
+  throw new Error('MEDUSA_BACKEND_URL or NEXT_PUBLIC_MEDUSA_BACKEND_URL is required')
+}
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error('NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is required')
+}
+
 export const listProducts = async ({
   pageParam = 1,
   queryParams,
