@@ -57,11 +57,17 @@ jobs:
       env:
         NODE_ENV: test
 
-    - name: Build application
+    - name: Build Next.js application
       if: github.ref == 'refs/heads/main'
       run: pnpm run build --webpack
       env:
         NODE_ENV: production
+
+    - name: Build OpenNext Cloudflare bundle
+      if: github.ref == 'refs/heads/main'
+      run: pnpm exec opennextjs-cloudflare build --skipNextBuild
+      env:
+        CLOUDFLARE_ENV: production
 
     - name: Deploy to Cloudflare Workers
       if: github.ref == 'refs/heads/main'

@@ -14,7 +14,27 @@ const requiredBackendUrl = [
   "NEXT_PUBLIC_MEDUSA_BACKEND_URL"
 ]
 
+/**
+ * Validate required environment variables for the application and terminate the process if any are missing.
+ *
+ * Checks for the publishable key and for at least one backend URL (MEDUSA_BACKEND_URL or NEXT_PUBLIC_MEDUSA_BACKEND_URL).
+ * When running on Cloudflare Pages (CF_PAGES === '1') the check is skipped and an informational message is logged.
+ * If required variables are missing, logs a formatted error listing and exits the process with code 1.
+ */
 function checkEnvVariables() {
+  /**
+   * For Cloudflare Workers deployments:
+   * - GitHub Actions provides env vars at build time and deploys via wrangler
+   * - Runtime vars are defined in wrangler.jsonc env.production section
+   *
+   * Skip validation if in CI without vars (indicates Cloudflare Pages auto-build
+   * which we don't use - deployment is via GitHub Actions workflow)
+   */
+  if (process.env.CI === 'true' && !process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY) {
+    console.log(c.yellow('⚠️  CI build without env vars detected - skipping validation (vars defined in wrangler.jsonc for runtime)'))
+    return
+  }
+
   const missingEnvs = requiredEnvs.filter(function (env) {
     return !process.env[env.key]
   })

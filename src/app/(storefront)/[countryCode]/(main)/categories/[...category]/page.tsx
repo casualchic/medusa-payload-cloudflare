@@ -48,6 +48,12 @@ export async function generateStaticParams() {
   }
 }
 
+/**
+ * Generate SEO metadata for a product category page based on route params.
+ *
+ * @param props - Route props containing `params.category` (category handle path segments) used to look up the category
+ * @returns A Metadata object with `title`, `description`, and `alternates.canonical` for the category page
+ */
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   try {
@@ -64,7 +70,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         canonical: `${params.category.join('/')}`,
       },
     }
-  } catch (error) {
+  } catch (_error) {
     notFound()
   }
 }

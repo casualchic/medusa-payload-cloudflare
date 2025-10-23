@@ -44,7 +44,7 @@ const nextConfig = {
     ],
   },
   // Cloudflare-specific webpack config
-  webpack: (webpackConfig: any) => {
+  webpack: (webpackConfig: { resolve: { extensionAlias: Record<string, string[]> } }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
       '.js': ['.ts', '.tsx', '.js', '.jsx'],

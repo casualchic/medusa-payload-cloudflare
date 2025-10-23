@@ -266,6 +266,12 @@ export async function initiatePaymentSession(
     .catch(medusaError)
 }
 
+/**
+ * Apply promotion codes to the current cart and revalidate relevant caches.
+ *
+ * @param codes - Promotion codes to apply to the cart
+ * @throws Error - If there is no existing cart
+ */
 export async function applyPromotions(codes: string[]) {
   const cartId = await getCartId()
 
@@ -289,7 +295,12 @@ export async function applyPromotions(codes: string[]) {
     .catch(medusaError)
 }
 
-export async function applyGiftCard(code: string) {
+/**
+ * Placeholder for applying a gift card to the current cart; currently a no-op.
+ *
+ * @param _code - The gift card code (unused)
+ */
+export async function applyGiftCard(_code: string) {
   //   const cartId = getCartId()
   //   if (!cartId) return "No cartId cookie found"
   //   try {
@@ -301,7 +312,12 @@ export async function applyGiftCard(code: string) {
   //   }
 }
 
-export async function removeDiscount(code: string) {
+/**
+ * Placeholder that would remove a discount code from the current cart; currently inactive and performs no action.
+ *
+ * @param _code - Discount code (ignored in the current implementation)
+ */
+export async function removeDiscount(_code: string) {
   // const cartId = getCartId()
   // if (!cartId) return "No cartId cookie found"
   // try {
@@ -312,9 +328,15 @@ export async function removeDiscount(code: string) {
   // }
 }
 
+/**
+ * Placeholder for removing a gift card from the current cart; currently a no-op.
+ *
+ * @param _codeToRemove - Gift card code intended for removal (currently unused)
+ * @param _giftCards - Array of gift card objects from which `_codeToRemove` would be removed (currently unused)
+ */
 export async function removeGiftCard(
-  codeToRemove: string,
-  giftCards: any[],
+  _codeToRemove: string,
+  _giftCards: any[],
   // giftCards: GiftCard[]
 ) {
   //   const cartId = getCartId()
