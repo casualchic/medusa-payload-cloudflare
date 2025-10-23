@@ -105,6 +105,9 @@ importers:
       react:
         specifier: 19.2.0
         version: 19.2.0
+      react-country-flag:
+        specifier: ^3.1.0
+        version: 3.1.0(react@19.2.0)
       react-dom:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
@@ -6418,6 +6421,12 @@ packages:
     peerDependencies:
       react: 19.2.0
       react-dom: 19.2.0
+
+  react-country-flag@3.1.0:
+    resolution: {integrity: sha512-JWQFw1efdv9sTC+TGQvTKXQg1NKbDU2mBiAiRWcKM9F1sK+/zjhP2yGmm8YDddWyZdXVkR8Md47rPMJmo4YO5g==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      react: 19.2.0
 
   react-currency-input-field@3.10.0:
     resolution: {integrity: sha512-GRmZogHh1e1LrmgXg/fKHSuRLYUnj/c/AumfvfuDMA0UX1mDR6u2NR0fzDemRdq4tNHNLucJeJ2OKCr3ehqyDA==}
@@ -15571,6 +15580,10 @@ snapshots:
       '@react-types/shared': 3.32.1(react@19.2.0)
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
+
+  react-country-flag@3.1.0(react@19.2.0):
+    dependencies:
+      react: 19.2.0
 
   react-currency-input-field@3.10.0(react@19.2.0):
     dependencies:
