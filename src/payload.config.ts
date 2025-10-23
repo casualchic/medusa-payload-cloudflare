@@ -23,6 +23,14 @@ const cloudflare =
     ? await getCloudflareContextFromWrangler()
     : await getCloudflareContext({ async: true })
 
+// Validate required environment variables
+// Fail fast in all environments if PAYLOAD_SECRET is missing
+if (!cloudflare.env?.PAYLOAD_SECRET && !process.env.PAYLOAD_SECRET) {
+  throw new Error('PAYLOAD_SECRET environment variable is required')
+}
+
+const payloadSecret = cloudflare.env?.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET!
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -32,7 +40,7 @@ export default buildConfig({
   },
   collections: [Users, Media, Products, ProductVariants, ProductOptions],
   editor: lexicalEditor(),
-  secret: cloudflare.env?.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET || 'fallback-secret-key',
+  secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

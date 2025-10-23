@@ -5,6 +5,8 @@ declare namespace Cloudflare {
   interface Env {
     R2: R2Bucket
     D1: D1Database
+    DB: D1Database // Alias for D1
+    PAYLOAD_SECRET: string
     ASSETS: Fetcher
   }
 }

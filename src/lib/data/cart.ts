@@ -27,9 +27,10 @@ if (!PUBLISHABLE_KEY) {
 }
 
 /**
- * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
- * @param cartId - optional - The ID of the cart to retrieve.
- * @returns The cart object if found, or null if not found.
+ * Fetches a cart by ID (or the cart ID from cookies when omitted) and returns the cart data.
+ *
+ * @param fields - Optional comma-separated fields to include in the cart response
+ * @returns The cart object if found, `null` otherwise.
  */
 export async function retrieveCart(cartId?: string, fields?: string) {
   try {
@@ -66,14 +67,21 @@ export async function retrieveCart(cartId?: string, fields?: string) {
       return null
     }
 
-    const data = await response.json()
-    return data.cart as HttpTypes.StoreCart
+    const data = (await response.json()) as { cart: HttpTypes.StoreCart }
+    return data.cart
   } catch (error) {
     console.error('Error in retrieveCart:', error)
     return null
   }
 }
 
+/**
+ * Ensures a cart exists for the region inferred from the given country code and returns that cart.
+ *
+ * @param countryCode - The ISO country code used to resolve the region for the cart
+ * @returns The store cart associated with the resolved region; created or updated as needed
+ * @throws Error if no region can be resolved for the provided country code
+ */
 export async function getOrSetCart(countryCode: string) {
   const region = await getRegion(countryCode)
 
@@ -94,18 +102,25 @@ export async function getOrSetCart(countryCode: string) {
     await setCartId(cart.id)
 
     const cartCacheTag = await getCacheTag('carts')
-    revalidateTag(cartCacheTag)
+    await revalidateTag(cartCacheTag)
   }
 
   if (cart && cart?.region_id !== region.id) {
     await sdk.store.cart.update(cart.id, { region_id: region.id }, {}, headers)
     const cartCacheTag = await getCacheTag('carts')
-    revalidateTag(cartCacheTag)
+    await revalidateTag(cartCacheTag)
   }
 
   return cart
 }
 
+/**
+ * Updates the current cart with the provided fields and revalidates cart and fulfillment cache tags.
+ *
+ * @param data - Fields to apply to the current cart update
+ * @returns The updated cart
+ * @throws Error if no existing cart is found
+ */
 export async function updateCart(data: HttpTypes.StoreUpdateCart) {
   const cartId = await getCartId()
 
@@ -120,17 +135,33 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
   return sdk.store.cart
     .update(cartId, data, {}, headers)
     .then(async ({ cart }: { cart: HttpTypes.StoreCart }) => {
-      const cartCacheTag = await getCacheTag('carts')
-      revalidateTag(cartCacheTag)
+      // Revalidate cache tags in parallel for better performance
+      const [cartCacheTag, fulfillmentCacheTag] = await Promise.all([
+        getCacheTag('carts'),
+        getCacheTag('fulfillment'),
+      ])
 
-      const fulfillmentCacheTag = await getCacheTag('fulfillment')
-      revalidateTag(fulfillmentCacheTag)
+      await Promise.all([
+        revalidateTag(cartCacheTag),
+        revalidateTag(fulfillmentCacheTag),
+      ])
 
       return cart
     })
     .catch(medusaError)
 }
 
+/**
+ * Adds a product variant to the current cart, creating or selecting a regional cart as needed.
+ *
+ * Revalidates cache tags for carts and fulfillment after successfully adding the line item.
+ *
+ * @param variantId - The ID of the product variant to add to the cart
+ * @param quantity - The number of units to add
+ * @param countryCode - ISO country code used to resolve the cart's region
+ * @throws When `variantId` is missing
+ * @throws When the cart cannot be retrieved or created
+ */
 export async function addToCart({
   variantId,
   quantity,
@@ -165,15 +196,28 @@ export async function addToCart({
       headers,
     )
     .then(async () => {
-      const cartCacheTag = await getCacheTag('carts')
-      revalidateTag(cartCacheTag)
+      // Revalidate cache tags in parallel for better performance
+      const [cartCacheTag, fulfillmentCacheTag] = await Promise.all([
+        getCacheTag('carts'),
+        getCacheTag('fulfillment'),
+      ])
 
-      const fulfillmentCacheTag = await getCacheTag('fulfillment')
-      revalidateTag(fulfillmentCacheTag)
+      await Promise.all([
+        revalidateTag(cartCacheTag),
+        revalidateTag(fulfillmentCacheTag),
+      ])
     })
     .catch(medusaError)
 }
 
+/**
+ * Update the quantity of a specific line item in the current cart and revalidate related caches.
+ *
+ * @param lineId - The ID of the cart line item to update
+ * @param quantity - The target quantity for the line item
+ * @throws Error if `lineId` is missing
+ * @throws Error if there is no current cart ID available
+ */
 export async function updateLineItem({ lineId, quantity }: { lineId: string; quantity: number }) {
   if (!lineId) {
     throw new Error('Missing lineItem ID when updating line item')
@@ -192,15 +236,27 @@ export async function updateLineItem({ lineId, quantity }: { lineId: string; qua
   await sdk.store.cart
     .updateLineItem(cartId, lineId, { quantity }, {}, headers)
     .then(async () => {
-      const cartCacheTag = await getCacheTag('carts')
-      revalidateTag(cartCacheTag)
+      // Revalidate cache tags in parallel for better performance
+      const [cartCacheTag, fulfillmentCacheTag] = await Promise.all([
+        getCacheTag('carts'),
+        getCacheTag('fulfillment'),
+      ])
 
-      const fulfillmentCacheTag = await getCacheTag('fulfillment')
-      revalidateTag(fulfillmentCacheTag)
+      await Promise.all([
+        revalidateTag(cartCacheTag),
+        revalidateTag(fulfillmentCacheTag),
+      ])
     })
     .catch(medusaError)
 }
 
+/**
+ * Removes a line item from the current cart and revalidates cart and fulfillment cache tags.
+ *
+ * @param lineId - The ID of the line item to remove
+ * @throws Error if `lineId` is not provided
+ * @throws Error if no cart ID can be resolved from storage
+ */
 export async function deleteLineItem(lineId: string) {
   if (!lineId) {
     throw new Error('Missing lineItem ID when deleting line item')
@@ -217,17 +273,29 @@ export async function deleteLineItem(lineId: string) {
   }
 
   await sdk.store.cart
-    .deleteLineItem(cartId, lineId, headers)
+    .deleteLineItem(cartId, lineId, {}, headers)
     .then(async () => {
-      const cartCacheTag = await getCacheTag('carts')
-      revalidateTag(cartCacheTag)
+      // Revalidate cache tags in parallel for better performance
+      const [cartCacheTag, fulfillmentCacheTag] = await Promise.all([
+        getCacheTag('carts'),
+        getCacheTag('fulfillment'),
+      ])
 
-      const fulfillmentCacheTag = await getCacheTag('fulfillment')
-      revalidateTag(fulfillmentCacheTag)
+      await Promise.all([
+        revalidateTag(cartCacheTag),
+        revalidateTag(fulfillmentCacheTag),
+      ])
     })
     .catch(medusaError)
 }
 
+/**
+ * Adds a shipping method to the specified cart and revalidates the carts cache.
+ *
+ * @param cartId - The ID of the cart to update
+ * @param shippingMethodId - The ID of the shipping option to attach to the cart
+ * @returns The response from the store API after adding the shipping method
+ */
 export async function setShippingMethod({
   cartId,
   shippingMethodId,
@@ -243,11 +311,20 @@ export async function setShippingMethod({
     .addShippingMethod(cartId, { option_id: shippingMethodId }, {}, headers)
     .then(async () => {
       const cartCacheTag = await getCacheTag('carts')
-      revalidateTag(cartCacheTag)
+      await revalidateTag(cartCacheTag)
     })
     .catch(medusaError)
 }
 
+/**
+ * Initiates a payment session for the given cart and payment initialization data.
+ *
+ * Also revalidates the carts cache tag after successfully initiating the session.
+ *
+ * @param cart - The cart for which the payment session will be created
+ * @param data - Payment session initialization payload
+ * @returns The response from the payment session initiation
+ */
 export async function initiatePaymentSession(
   cart: HttpTypes.StoreCart,
   data: HttpTypes.StoreInitializePaymentSession,
@@ -260,16 +337,17 @@ export async function initiatePaymentSession(
     .initiatePaymentSession(cart, data, {}, headers)
     .then(async (resp) => {
       const cartCacheTag = await getCacheTag('carts')
-      revalidateTag(cartCacheTag)
+      await revalidateTag(cartCacheTag)
       return resp
     })
     .catch(medusaError)
 }
 
 /**
- * Apply promotion codes to the current cart and revalidate relevant caches.
+ * Applies promotion codes to the current cart and revalidates related caches.
  *
  * @param codes - Promotion codes to apply to the cart
+ * @returns `void` after promotions are applied and related caches are revalidated
  * @throws Error - If there is no existing cart
  */
 export async function applyPromotions(codes: string[]) {
@@ -286,11 +364,16 @@ export async function applyPromotions(codes: string[]) {
   return sdk.store.cart
     .update(cartId, { promo_codes: codes }, {}, headers)
     .then(async () => {
-      const cartCacheTag = await getCacheTag('carts')
-      revalidateTag(cartCacheTag)
+      // Revalidate cache tags in parallel for better performance
+      const [cartCacheTag, fulfillmentCacheTag] = await Promise.all([
+        getCacheTag('carts'),
+        getCacheTag('fulfillment'),
+      ])
 
-      const fulfillmentCacheTag = await getCacheTag('fulfillment')
-      revalidateTag(fulfillmentCacheTag)
+      await Promise.all([
+        revalidateTag(cartCacheTag),
+        revalidateTag(fulfillmentCacheTag),
+      ])
     })
     .catch(medusaError)
 }
@@ -336,7 +419,7 @@ export async function removeDiscount(_code: string) {
  */
 export async function removeGiftCard(
   _codeToRemove: string,
-  _giftCards: any[],
+  _giftCards: unknown[],
   // giftCards: GiftCard[]
 ) {
   //   const cartId = getCartId()
@@ -358,8 +441,8 @@ export async function submitPromotionForm(currentState: unknown, formData: FormD
   const code = formData.get('code') as string
   try {
     await applyPromotions([code])
-  } catch (e: any) {
-    return e.message
+  } catch (e: unknown) {
+    return e instanceof Error ? e.message : String(e)
   }
 }
 
@@ -374,7 +457,11 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
       throw new Error('No existing cart found when setting addresses')
     }
 
-    const data = {
+    const data: {
+      shipping_address: Record<string, FormDataEntryValue | null>
+      billing_address?: Record<string, FormDataEntryValue | null>
+      email: FormDataEntryValue | null
+    } = {
       shipping_address: {
         first_name: formData.get('shipping_address.first_name'),
         last_name: formData.get('shipping_address.last_name'),
@@ -388,7 +475,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         phone: formData.get('shipping_address.phone'),
       },
       email: formData.get('email'),
-    } as any
+    }
 
     const sameAsBilling = formData.get('same_as_billing')
     if (sameAsBilling === 'on') data.billing_address = data.shipping_address
@@ -407,17 +494,20 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         phone: formData.get('billing_address.phone'),
       }
     await updateCart(data)
-  } catch (e: any) {
-    return e.message
+  } catch (e: unknown) {
+    return e instanceof Error ? e.message : String(e)
   }
 
   redirect(`/${formData.get('shipping_address.country_code')}/checkout?step=delivery`)
 }
 
 /**
- * Places an order for a cart. If no cart ID is provided, it will use the cart ID from the cookies.
- * @param cartId - optional - The ID of the cart to place an order for.
- * @returns The cart object if the order was successful, or null if not.
+ * Completes checkout for a cart and returns the resulting cart; if the completion results in an order, navigates to the order confirmation page.
+ *
+ * Attempts to complete the cart identified by `cartId` (or the cart id stored in cookies if omitted). If the completion response is an order, the function removes the cart id cookie, revalidates order and cart caches, and redirects the user to the order confirmation page.
+ *
+ * @param cartId - Optional cart ID to place the order for; when omitted the cart id from cookies is used
+ * @returns The cart object from the completion response, or `undefined` if the response does not include a cart
  */
 export async function placeOrder(cartId?: string) {
   const id = cartId || (await getCartId())
@@ -434,7 +524,7 @@ export async function placeOrder(cartId?: string) {
     .complete(id, {}, headers)
     .then(async (cartRes) => {
       const cartCacheTag = await getCacheTag('carts')
-      revalidateTag(cartCacheTag)
+      await revalidateTag(cartCacheTag)
       return cartRes
     })
     .catch(medusaError)
@@ -443,7 +533,7 @@ export async function placeOrder(cartId?: string) {
     const countryCode = cartRes.order.shipping_address?.country_code?.toLowerCase()
 
     const orderCacheTag = await getCacheTag('orders')
-    revalidateTag(orderCacheTag)
+    await revalidateTag(orderCacheTag)
 
     removeCartId()
     redirect(`/${countryCode}/order/${cartRes?.order.id}/confirmed`)
@@ -453,9 +543,14 @@ export async function placeOrder(cartId?: string) {
 }
 
 /**
- * Updates the countrycode param and revalidates the regions cache
- * @param regionId
- * @param countryCode
+ * Update the active region from a country code, revalidate related caches, and redirect to the provided path.
+ *
+ * If a cart exists, its region will be updated before cache revalidation. After revalidating regions, products,
+ * and (when applicable) carts cache tags, the user is redirected to `/{countryCode}{currentPath}`.
+ *
+ * @param countryCode - ISO country code used to resolve the target region
+ * @param currentPath - The path to redirect to after updating the region (preserves existing pathname)
+ * @throws Error when no region can be resolved for the provided `countryCode`
  */
 export async function updateRegion(countryCode: string, currentPath: string) {
   const cartId = await getCartId()
@@ -467,19 +562,27 @@ export async function updateRegion(countryCode: string, currentPath: string) {
 
   if (cartId) {
     await updateCart({ region_id: region.id })
-    const cartCacheTag = await getCacheTag('carts')
-    revalidateTag(cartCacheTag)
   }
 
-  const regionCacheTag = await getCacheTag('regions')
-  revalidateTag(regionCacheTag)
+  // Revalidate all affected cache tags in parallel
+  const cacheTagPromises = [getCacheTag('regions'), getCacheTag('products')]
+  if (cartId) {
+    cacheTagPromises.push(getCacheTag('carts'))
+  }
 
-  const productsCacheTag = await getCacheTag('products')
-  revalidateTag(productsCacheTag)
+  const cacheTags = await Promise.all(cacheTagPromises)
+  await Promise.all(cacheTags.map(tag => revalidateTag(tag)))
 
   redirect(`/${countryCode}${currentPath}`)
 }
 
+/**
+ * Retrieves available shipping options for the current cart.
+ *
+ * Returns the cart's shipping options; if there is no cart, the backend returns a non-OK response, or an error occurs, an empty `shipping_options` array is returned.
+ *
+ * @returns An object with `shipping_options` containing an array of shipping option objects for the current cart (empty if unavailable)
+ */
 export async function listCartOptions() {
   try {
     const cartId = await getCartId()
@@ -512,9 +615,9 @@ export async function listCartOptions() {
       return { shipping_options: [] }
     }
 
-    const data = await response.json()
+    const data = (await response.json()) as { shipping_options: HttpTypes.StoreCartShippingOption[] }
     return {
-      shipping_options: data.shipping_options as HttpTypes.StoreCartShippingOption[],
+      shipping_options: data.shipping_options,
     }
   } catch (error) {
     console.error('Error in listCartOptions:', error)

@@ -10,6 +10,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    # Security: Restrict GITHUB_TOKEN permissions to minimum required
+    permissions:
+      contents: read
+      deployments: write
+
     env:
       # Security: Use GitHub Secrets instead of hardcoded credentials
       NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ secrets.MEDUSA_BACKEND_URL }}
@@ -25,8 +30,9 @@ jobs:
       with:
         node-version: '20'
         
+    # Pin to specific commit SHA for security
     - name: Setup pnpm
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
       with:
         version: 9
         
@@ -54,7 +60,11 @@ jobs:
       run: pnpm run test:int
       env:
         NODE_ENV: test
+        PAYLOAD_SECRET: test-secret-for-ci
 
+    # Build with webpack flag instead of Turbopack due to drizzle-kit binary parsing issues
+    # --no-deprecation: Suppress deprecation warnings to reduce noise
+    # --max-old-space-size=8000: Allocate 8GB memory for large builds
     - name: Build Next.js application
       if: github.ref == 'refs/heads/main'
       run: pnpm exec cross-env NODE_OPTIONS="--no-deprecation --max-old-space-size=8000" next build --webpack

@@ -35,10 +35,14 @@ export const retrieveCollection = async (id: string) => {
       throw new Error(`Failed to fetch collection: ${response.statusText}`)
     }
 
-    const data = await response.json()
-    return data.collection as HttpTypes.StoreCollection
+    const data = (await response.json()) as { collection: HttpTypes.StoreCollection }
+    return data.collection
   } catch (error) {
-    console.error(`Error in retrieveCollection(${id}):`, error)
+    // Sanitize ID for logging to prevent log injection
+    console.error('Error in retrieveCollection', {
+      id: String(id).substring(0, 50),
+      error
+    })
     throw error
   }
 }
@@ -72,9 +76,9 @@ export const listCollections = async (
       throw new Error(`Failed to fetch collections: ${response.statusText}`)
     }
 
-    const data = await response.json()
+    const data = (await response.json()) as { collections: HttpTypes.StoreCollection[] }
     return {
-      collections: data.collections as HttpTypes.StoreCollection[],
+      collections: data.collections,
       count: data.collections?.length || 0,
     }
   } catch (error) {
@@ -86,7 +90,6 @@ export const listCollections = async (
         id: 'fallback-1',
         title: 'Featured Products',
         handle: 'featured',
-        description: 'Our featured products',
         metadata: {},
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -99,7 +102,6 @@ export const listCollections = async (
         id: 'fallback-2',
         title: 'New Arrivals',
         handle: 'new-arrivals',
-        description: 'Latest additions to our store',
         metadata: {},
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -117,7 +119,7 @@ export const listCollections = async (
   }
 }
 
-export const getCollectionByHandle = async (handle: string): Promise<HttpTypes.StoreCollection> => {
+export const getCollectionByHandle = async (handle: string): Promise<HttpTypes.StoreCollection | null> => {
   try {
     const cacheOptions = await getCacheOptions('collections')
 
@@ -141,10 +143,23 @@ export const getCollectionByHandle = async (handle: string): Promise<HttpTypes.S
       throw new Error(`Failed to fetch collection: ${response.statusText}`)
     }
 
-    const data = await response.json()
-    return data.collections[0] as HttpTypes.StoreCollection
+    const data = (await response.json()) as { collections: HttpTypes.StoreCollection[] }
+
+    if (!data.collections || data.collections.length === 0) {
+      // Sanitize handle for logging to prevent log injection
+      console.warn('No collection found with handle', {
+        handle: String(handle).substring(0, 100)
+      })
+      return null
+    }
+
+    return data.collections[0]
   } catch (error) {
-    console.error(`Error in getCollectionByHandle(${handle}):`, error)
+    // Sanitize handle for logging
+    console.error('Error in getCollectionByHandle', {
+      handle: String(handle).substring(0, 100),
+      error
+    })
     throw error
   }
 }

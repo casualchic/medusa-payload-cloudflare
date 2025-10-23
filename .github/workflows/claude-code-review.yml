@@ -31,6 +31,8 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Note: Using @v1 (not pinned SHA) for Anthropic's official action
+      # to receive automatic security updates and bug fixes
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1

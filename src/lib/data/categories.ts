@@ -12,7 +12,7 @@ if (!PUBLISHABLE_KEY) {
   throw new Error('NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is required')
 }
 
-export const listCategories = async (query?: Record<string, any>) => {
+export const listCategories = async (query?: Record<string, unknown>) => {
   try {
     const cacheOptions = await getCacheOptions('categories')
     const limit = query?.limit || 100
@@ -51,8 +51,8 @@ export const listCategories = async (query?: Record<string, any>) => {
       throw new Error(`Failed to fetch categories: ${response.statusText}`)
     }
 
-    const data = await response.json()
-    return data.product_categories as HttpTypes.StoreProductCategory[]
+    const data = (await response.json()) as { product_categories: HttpTypes.StoreProductCategory[] }
+    return data.product_categories
   } catch (error) {
     console.error('Error in listCategories:', error)
 
@@ -63,9 +63,7 @@ export const listCategories = async (query?: Record<string, any>) => {
         name: 'Clothing',
         handle: 'clothing',
         description: 'Browse our clothing collection',
-        is_active: true,
-        is_internal: false,
-        rank: 1,
+                rank: 1,
         category_children: [],
         parent_category: null,
         products: [],
@@ -79,9 +77,7 @@ export const listCategories = async (query?: Record<string, any>) => {
         name: 'Accessories',
         handle: 'accessories',
         description: 'Find the perfect accessories',
-        is_active: true,
-        is_internal: false,
-        rank: 2,
+                rank: 2,
         category_children: [],
         parent_category: null,
         products: [],
@@ -125,8 +121,29 @@ export const getCategoryByHandle = async (categoryHandle: string[]) => {
       throw new Error(`Failed to fetch category: ${response.statusText}`)
     }
 
-    const data = await response.json()
-    return data.product_categories[0] as HttpTypes.StoreProductCategory
+    const data = (await response.json()) as { product_categories: HttpTypes.StoreProductCategory[] }
+
+    if (!data.product_categories || data.product_categories.length === 0) {
+      console.warn(`No category found with handle: ${categoryHandle.join('/')}`)
+      // Return fallback category instead of undefined
+      const fallbackCategory: HttpTypes.StoreProductCategory = {
+        id: `cat-${categoryHandle.join('-')}`,
+        name: categoryHandle.join(' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+        handle: categoryHandle.join('/'),
+        description: `Browse our ${categoryHandle.join(' ')} collection`,
+        rank: 1,
+        category_children: [],
+        parent_category: null,
+        products: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null,
+        metadata: {},
+      }
+      return fallbackCategory
+    }
+
+    return data.product_categories[0]
   } catch (error) {
     console.error(`Error in getCategoryByHandle(${categoryHandle}):`, error)
 
@@ -136,9 +153,7 @@ export const getCategoryByHandle = async (categoryHandle: string[]) => {
       name: categoryHandle.join(' ').replace(/\b\w/g, (l) => l.toUpperCase()),
       handle: categoryHandle.join('/'),
       description: `Browse our ${categoryHandle.join(' ')} collection`,
-      is_active: true,
-      is_internal: false,
-      rank: 1,
+            rank: 1,
       category_children: [],
       parent_category: null,
       products: [],

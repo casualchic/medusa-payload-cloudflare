@@ -57,8 +57,8 @@ export const retrieveCustomer = async (): Promise<HttpTypes.StoreCustomer | null
       return null
     }
 
-    const data = await response.json()
-    return data.customer as HttpTypes.StoreCustomer
+    const data = (await response.json()) as { customer: HttpTypes.StoreCustomer }
+    return data.customer
   } catch (error) {
     console.error('Error in retrieveCustomer:', error)
     return null
@@ -76,7 +76,7 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
     .catch(medusaError)
 
   const cacheTag = await getCacheTag('customers')
-  revalidateTag(cacheTag)
+  await revalidateTag(cacheTag)
 
   return updateRes
 }
@@ -112,16 +112,22 @@ export async function signup(_currentState: unknown, formData: FormData) {
     await setAuthToken(loginToken as string)
 
     const customerCacheTag = await getCacheTag('customers')
-    revalidateTag(customerCacheTag)
+    await revalidateTag(customerCacheTag)
 
     await transferCart()
 
     return createdCustomer
-  } catch (error: any) {
-    return error.toString()
+  } catch (error: unknown) {
+    return error instanceof Error ? error.message : String(error)
   }
 }
 
+/**
+ * Authenticates a customer with email/password, stores the session token, revalidates customer cache, and attempts to transfer the local cart to the authenticated session.
+ *
+ * @param formData - FormData containing the credentials; must include `email` and `password`
+ * @returns An error message string if authentication or cart transfer fails, otherwise `undefined`
+ */
 export async function login(_currentState: unknown, formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
@@ -130,35 +136,45 @@ export async function login(_currentState: unknown, formData: FormData) {
     await sdk.auth.login('customer', 'emailpass', { email, password }).then(async (token) => {
       await setAuthToken(token as string)
       const customerCacheTag = await getCacheTag('customers')
-      revalidateTag(customerCacheTag)
+      await revalidateTag(customerCacheTag)
     })
-  } catch (error: any) {
-    return error.toString()
+  } catch (error: unknown) {
+    return error instanceof Error ? error.message : String(error)
   }
 
   try {
     await transferCart()
-  } catch (error: any) {
-    return error.toString()
+  } catch (error: unknown) {
+    return error instanceof Error ? error.message : String(error)
   }
 }
 
+/**
+ * Terminate the current customer session, clear local auth and cart state, refresh related caches, and redirect to the country-specific account page.
+ *
+ * @param countryCode - Two-letter country code used to construct the post-signout account page path (e.g., `us`)
+ */
 export async function signout(countryCode: string) {
   await sdk.auth.logout()
 
   await removeAuthToken()
 
   const customerCacheTag = await getCacheTag('customers')
-  revalidateTag(customerCacheTag)
+  await revalidateTag(customerCacheTag)
 
   await removeCartId()
 
   const cartCacheTag = await getCacheTag('carts')
-  revalidateTag(cartCacheTag)
+  await revalidateTag(cartCacheTag)
 
   redirect(`/${countryCode}/account`)
 }
 
+/**
+ * Transfers a locally stored cart to the currently authenticated user's cart and refreshes the carts cache.
+ *
+ * Retrieves the local cart identifier, associates that cart with the authenticated session if present, and revalidates the carts cache tag.
+ */
 export async function transferCart() {
   const cartId = await getCartId()
 
@@ -171,13 +187,13 @@ export async function transferCart() {
   await sdk.store.cart.transferCart(cartId, {}, headers)
 
   const cartCacheTag = await getCacheTag('carts')
-  revalidateTag(cartCacheTag)
+  await revalidateTag(cartCacheTag)
 }
 
 export const addCustomerAddress = async (
   currentState: Record<string, unknown>,
   formData: FormData,
-): Promise<any> => {
+): Promise<string | HttpTypes.StoreCustomer> => {
   const isDefaultBilling = (currentState.isDefaultBilling as boolean) || false
   const isDefaultShipping = (currentState.isDefaultShipping as boolean) || false
 
@@ -204,7 +220,7 @@ export const addCustomerAddress = async (
     .createAddress(address, {}, headers)
     .then(async ({ customer }) => {
       const customerCacheTag = await getCacheTag('customers')
-      revalidateTag(customerCacheTag)
+      await revalidateTag(customerCacheTag)
       return { success: true, error: null }
     })
     .catch((err) => {
@@ -218,10 +234,10 @@ export const deleteCustomerAddress = async (addressId: string): Promise<void> =>
   }
 
   await sdk.store.customer
-    .deleteAddress(addressId, headers)
+    .deleteAddress(addressId, {}, headers)
     .then(async () => {
       const customerCacheTag = await getCacheTag('customers')
-      revalidateTag(customerCacheTag)
+      await revalidateTag(customerCacheTag)
       return { success: true, error: null }
     })
     .catch((err) => {
@@ -265,7 +281,7 @@ export const updateCustomerAddress = async (
     .updateAddress(addressId, address, {}, headers)
     .then(async () => {
       const customerCacheTag = await getCacheTag('customers')
-      revalidateTag(customerCacheTag)
+      await revalidateTag(customerCacheTag)
       return { success: true, error: null }
     })
     .catch((err) => {

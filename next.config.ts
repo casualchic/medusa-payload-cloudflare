@@ -26,19 +26,19 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "http",
+        protocol: "http" as const,
         hostname: "localhost",
       },
       {
-        protocol: "https",
+        protocol: "https" as const,
         hostname: "medusa-public-images.s3.eu-west-1.amazonaws.com",
       },
       {
-        protocol: "https",
+        protocol: "https" as const,
         hostname: "medusa-server-testing.s3.amazonaws.com",
       },
       {
-        protocol: "https",
+        protocol: "https" as const,
         hostname: "medusa-server-testing.s3.us-east-1.amazonaws.com",
       },
     ],

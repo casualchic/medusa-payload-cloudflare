@@ -37,8 +37,8 @@ export const listRegions = async () => {
       throw new Error(`Failed to fetch regions: ${response.statusText}`)
     }
 
-    const data = await response.json()
-    return data.regions as HttpTypes.StoreRegion[]
+    const data = (await response.json()) as { regions: HttpTypes.StoreRegion[] }
+    return data.regions
   } catch (error) {
     console.error('Error in listRegions:', error)
     throw error
@@ -64,14 +64,23 @@ export const retrieveRegion = async (id: string) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      console.error(`Error fetching region ${id}:`, response.status, errorData)
+      // Sanitize ID for logging to prevent log injection
+      console.error('Error fetching region', {
+        id: String(id).substring(0, 50),
+        status: response.status,
+        errorData
+      })
       throw new Error(`Failed to fetch region: ${response.statusText}`)
     }
 
-    const data = await response.json()
-    return data.region as HttpTypes.StoreRegion
+    const data = (await response.json()) as { region: HttpTypes.StoreRegion }
+    return data.region
   } catch (error) {
-    console.error(`Error in retrieveRegion(${id}):`, error)
+    // Sanitize ID for logging
+    console.error('Error in retrieveRegion', {
+      id: String(id).substring(0, 50),
+      error
+    })
     throw error
   }
 }
@@ -94,7 +103,10 @@ export const getRegion = async (countryCode: string) => {
     }
 
     // Fallback to first region if country code not found
-    console.warn(`Region for country code ${countryCode} not found, using first available region`)
+    // Sanitize country code for logging to prevent log injection
+    console.warn('Region not found for country code, using first available region', {
+      countryCode: String(countryCode).substring(0, 10) // Limit length and convert to string
+    })
     return regions[0]
   } catch (e: any) {
     console.error('Error in getRegion:', e)
@@ -105,8 +117,10 @@ export const getRegion = async (countryCode: string) => {
       name: countryCode === 'us' ? 'United States' : countryCode.toUpperCase(),
       countries: [
         {
+          id: countryCode,
           iso_2: countryCode,
-          iso_3: countryCode,
+          // Map common 2-letter codes to proper ISO 3166-1 alpha-3 codes
+          iso_3: countryCode === 'us' ? 'usa' : countryCode === 'gb' ? 'gbr' : countryCode === 'ca' ? 'can' : countryCode.toUpperCase(),
           name: countryCode === 'us' ? 'United States' : countryCode.toUpperCase(),
         },
       ],

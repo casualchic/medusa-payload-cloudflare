@@ -70,13 +70,25 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const isOpen = searchParams.get("step") === "delivery"
 
-  const _shippingMethods = availableShippingMethods?.filter(
-    (sm) => sm.service_zone?.fulfillment_set?.type !== "pickup"
-  )
+  // Note: service_zone is not populated in the new API, only service_zone_id is available
+  // We identify pickup methods by checking the shipping option name pattern
+  // TODO: Update when Medusa API provides a dedicated type field for pickup methods
+  // This is a temporary workaround based on naming conventions
+  const isPickupMethod = (sm: HttpTypes.StoreCartShippingOption) => {
+    if (!sm?.name) return false
+    const name = sm.name.toLowerCase()
+    // Common pickup/click-and-collect naming patterns
+    return (
+      name.includes('pickup') ||
+      name.includes('click') ||
+      name.includes('collect') ||
+      name.includes('in-store') ||
+      name.includes('store pickup')
+    )
+  }
 
-  const _pickupMethods = availableShippingMethods?.filter(
-    (sm) => sm.service_zone?.fulfillment_set?.type === "pickup"
-  )
+  const _shippingMethods = availableShippingMethods?.filter(sm => sm && !isPickupMethod(sm)) || []
+  const _pickupMethods = availableShippingMethods?.filter(sm => sm && isPickupMethod(sm)) || []
 
   const hasPickupOptions = !!_pickupMethods?.length
 
@@ -257,7 +269,7 @@ const Shipping: React.FC<ShippingProps> = ({
                           {
                             "border-ui-border-interactive":
                               option.id === shippingMethodId,
-                            "hover:shadow-brders-none cursor-not-allowed":
+                            "hover:shadow-borders-none cursor-not-allowed":
                               isDisabled,
                           }
                         )}
@@ -327,7 +339,7 @@ const Shipping: React.FC<ShippingProps> = ({
                             {
                               "border-ui-border-interactive":
                                 option.id === shippingMethodId,
-                              "hover:shadow-brders-none cursor-not-allowed":
+                              "hover:shadow-borders-none cursor-not-allowed":
                                 option.insufficient_inventory,
                             }
                           )}
@@ -340,12 +352,12 @@ const Shipping: React.FC<ShippingProps> = ({
                               <span className="text-base-regular">
                                 {option.name}
                               </span>
-                              <span className="text-base-regular text-ui-fg-muted">
-                                {formatAddress(
-                                  option.service_zone?.fulfillment_set?.location
-                                    ?.address
-                                )}
-                              </span>
+                              {/* Show pickup type badge - option.name already contains location info */}
+                              {isPickupMethod(option) && (
+                                <span className="text-base-regular text-ui-fg-muted">
+                                  Pickup
+                                </span>
+                              )}
                             </div>
                           </div>
                           <span className="justify-self-end text-ui-fg-base">

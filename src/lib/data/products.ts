@@ -67,6 +67,13 @@ export const listProducts = async ({
     }
 
     // Add additional query params if provided, excluding complex fields
+    // Whitelist of allowed query parameter keys to prevent property injection
+    const allowedKeys = [
+      'q', 'id', 'handle', 'category_id', 'collection_id', 'tags',
+      'title', 'description', 'is_giftcard', 'created_at', 'updated_at',
+      'order', 'region_id', 'currency_code'
+    ]
+
     if (queryParams) {
       Object.entries(queryParams).forEach(([key, value]) => {
         if (
@@ -77,6 +84,14 @@ export const listProducts = async ({
           key !== 'limit' &&
           key !== 'offset'
         ) {
+          // Only allow whitelisted keys to prevent remote property injection
+          if (!allowedKeys.includes(key)) {
+            console.warn('Skipping non-whitelisted query parameter', {
+              key: String(key).substring(0, 50)
+            })
+            return
+          }
+
           // Handle arrays by joining with commas
           if (Array.isArray(value)) {
             const filtered = value.filter((v) => v !== '' && v !== null && v !== undefined)
@@ -126,8 +141,8 @@ export const listProducts = async ({
       throw new Error(`Failed to fetch products: ${response.statusText}`)
     }
 
-    const data = await response.json()
-    const products = data.products as HttpTypes.StoreProduct[]
+    const data = (await response.json()) as { products: HttpTypes.StoreProduct[]; count?: number }
+    const products = data.products
     const count = data.count || products.length
 
     const nextPage = count > offset + limit ? pageParam + 1 : null
@@ -151,7 +166,7 @@ export const listProducts = async ({
  * It will then return the paginated products based on the page and limit parameters.
  */
 export const listProductsWithSort = async ({
-  page = 0,
+  page = 1,
   queryParams,
   sortBy = 'created_at',
   countryCode,
@@ -180,11 +195,14 @@ export const listProductsWithSort = async ({
 
   const sortedProducts = sortProducts(products, sortBy)
 
-  const pageParam = (page - 1) * limit
+  // Ensure page is at least 1 for standard pagination
+  const currentPage = Math.max(page, 1)
+  const start = (currentPage - 1) * limit
 
-  const nextPage = count > pageParam + limit ? pageParam + limit : null
+  // Next page should be page number, not offset
+  const nextPage = count > start + limit ? currentPage + 1 : null
 
-  const paginatedProducts = sortedProducts.slice(pageParam, pageParam + limit)
+  const paginatedProducts = sortedProducts.slice(start, start + limit)
 
   return {
     response: {
