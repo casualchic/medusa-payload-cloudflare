@@ -5,8 +5,11 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 export default defineConfig({
   plugins: [tsconfigPaths(), react()],
   test: {
-    environment: 'jsdom',
+    // Use node environment for API integration tests (not jsdom)
+    // jsdom is for UI component tests, node is for API/backend tests
+    environment: 'node',
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/int/**/*.int.spec.ts'],
+    globals: true,
   },
 })

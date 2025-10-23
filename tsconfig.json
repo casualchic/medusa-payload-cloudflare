@@ -25,11 +25,21 @@
       }
     ],
     "paths": {
-      "@/*": ["*"],
-      "@lib/*": ["lib/*"],
-      "@modules/*": ["modules/*"],
-      "@pages/*": ["pages/*"],
-      "@payload-config": ["./payload.config.ts"]
+      "@/*": [
+        "*"
+      ],
+      "@lib/*": [
+        "lib/*"
+      ],
+      "@modules/*": [
+        "modules/*"
+      ],
+      "@pages/*": [
+        "pages/*"
+      ],
+      "@payload-config": [
+        "./payload.config.ts"
+      ]
     },
     "target": "ES2022"
   },
@@ -37,7 +47,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

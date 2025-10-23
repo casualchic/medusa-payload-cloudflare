@@ -1,13 +1,16 @@
 import { HttpTypes } from '@medusajs/types'
 import { getCacheOptions } from './cookies'
 
-const IS_PRODUCTION = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
-const MEDUSA_BACKEND_URL = IS_PRODUCTION
-  ? process.env.MEDUSA_BACKEND_URL ||
-    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
-    'https://casual-chic.medusajs.app'
-  : 'https://casual-chic.medusajs.app'
-const PUBLISHABLE_KEY = 'pk_f086d3c7cf6026676f9eef829d75bfcfdc8ca77ae1eeafbb2e06d367938ac456'
+const MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+
+if (!MEDUSA_BACKEND_URL) {
+  throw new Error('MEDUSA_BACKEND_URL or NEXT_PUBLIC_MEDUSA_BACKEND_URL is required')
+}
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error('NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is required')
+}
 
 export const listCategories = async (query?: Record<string, any>) => {
   try {
