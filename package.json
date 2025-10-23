@@ -42,6 +42,7 @@
     "@faceless-ui/modal": "^3.0.0",
     "@faceless-ui/scroll-info": "^2.0.0",
     "@headlessui/react": "^2.2.9",
+    "@medusajs/icons": "latest",
     "@medusajs/js-sdk": "latest",
     "@medusajs/ui": "latest",
     "@opennextjs/cloudflare": "^1.11.0",

@@ -17,6 +17,8 @@ const nextConfig = {
   },
   // Turbopack is default in Next.js 16
   turbopack: {},
+  // Exclude problematic packages from bundling
+  serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild'],
   images: {
     remotePatterns: [
       {

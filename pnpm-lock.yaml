@@ -33,6 +33,9 @@ importers:
       '@headlessui/react':
         specifier: ^2.2.9
         version: 2.2.9(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@medusajs/icons':
+        specifier: latest
+        version: 2.11.0(react@19.2.0)
       '@medusajs/js-sdk':
         specifier: latest
         version: 2.11.0
