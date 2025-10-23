@@ -11,8 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://casual-chic.medusajs.app
-      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_f086d3c7cf6026676f9eef829d75bfcfdc8ca77ae1eeafbb2e06d367938ac456
+      # Security: Use GitHub Secrets instead of hardcoded credentials
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ secrets.MEDUSA_BACKEND_URL }}
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${{ secrets.MEDUSA_PUBLISHABLE_KEY }}
       # NODE_ENV is set per-step to avoid conflicts with Next.js CLI commands
     
     steps:
