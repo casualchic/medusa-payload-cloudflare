@@ -1,5 +1,5 @@
 import { Text } from "@medusajs/ui"
-import { listProducts } from "@lib/data/products"
+// import { listProducts } from "@lib/data/products"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -11,7 +11,7 @@ import { formatPayloadImageUrl, getProductImages } from "../../../../lib/util/pa
 export default async function ProductPreview({
   product,
   isFeatured,
-  region,
+  _region,
 }: {
   product: StoreProductWithPayload
   isFeatured?: boolean

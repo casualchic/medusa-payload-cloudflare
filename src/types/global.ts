@@ -1,6 +1,6 @@
 import { StorePrice } from "@medusajs/types"
 import { StoreProduct } from "@medusajs/types"
-// @ts-ignore
+// @ts-expect-error - Module augmentation for HttpTypes
 import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical"
 
 export type FeaturedProduct = {

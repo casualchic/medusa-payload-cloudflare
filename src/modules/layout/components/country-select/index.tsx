@@ -78,7 +78,7 @@ const CountrySelect = ({ toggleState, regions }: CountrySelectProps) => {
             <span>Shipping to:</span>
             {current && (
               <span className="txt-compact-small flex items-center gap-x-2">
-                {/* @ts-ignore */}
+                {/* @ts-expect-error - Listbox types are incompatible */}
                 <ReactCountryFlag
                   svg
                   style={{
@@ -111,7 +111,7 @@ const CountrySelect = ({ toggleState, regions }: CountrySelectProps) => {
                     value={o}
                     className="py-2 hover:bg-gray-200 px-3 cursor-pointer flex items-center gap-x-2"
                   >
-                    {/* @ts-ignore */}
+                    {/* @ts-expect-error - Listbox types are incompatible */}
                     <ReactCountryFlag
                       svg
                       style={{

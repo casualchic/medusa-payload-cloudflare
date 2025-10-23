@@ -40,7 +40,7 @@ const Item: React.FC<AccordionItemProps> = ({
   headingSize = "large",
   customTrigger = undefined,
   forceMountContent = undefined,
-  triggerable,
+  _triggerable,
   ...props
 }) => {
   return (

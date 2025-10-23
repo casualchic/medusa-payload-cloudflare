@@ -1,8 +1,7 @@
-import { HttpTypes } from "@medusajs/types"
 import { Heading, Text } from "@medusajs/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { StoreProductWithPayload } from "../../../../types/global"
-// @ts-ignore
+// @ts-expect-error - RichText types are not exported
 import { RichText } from "@payloadcms/richtext-lexical/react"
 
 type ProductInfoProps = {

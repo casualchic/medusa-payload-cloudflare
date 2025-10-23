@@ -7,8 +7,8 @@ type FilterRadioGroupProps = {
     value: string
     label: string
   }[]
-  value: any
-  handleChange: (...args: any[]) => void
+  value: string
+  handleChange: (value: string) => void
   "data-testid"?: string
 }
 

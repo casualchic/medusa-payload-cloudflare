@@ -24,7 +24,7 @@ const optionsAsKeymap = (
   payloadData: StoreProductWithPayload["payload_product"]
 ) => {
   const firstVariant = payloadData?.variants?.[0]
-  return variantOptions?.reduce((acc: Record<string, string>, varopt: any) => {
+  return variantOptions?.reduce((acc: Record<string, string>, varopt: unknown) => {
     acc[varopt.option_id] = firstVariant?.option_values.find(
       (v) => v.medusa_option_id === varopt.id
     )?.value || varopt.value
