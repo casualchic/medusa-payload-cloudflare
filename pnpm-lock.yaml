@@ -15,7 +15,6 @@ overrides:
   '@types/node': ^22.5.4
   '@eslint/plugin-kit': ^0.4.0
   pino: ^10.0.0
-  awilix: ^8.0.1
 
 importers:
 
@@ -72,9 +71,6 @@ importers:
       '@types/react-dom':
         specifier: 19.1.6
         version: 19.1.6(@types/react@19.1.8)
-      awilix:
-        specifier: ^8.0.1
-        version: 8.0.1
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
