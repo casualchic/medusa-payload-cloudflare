@@ -12,12 +12,17 @@ const nextConfig = {
       fullUrl: true,
     },
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Turbopack is default in Next.js 16 but incompatible with Payload CMS
+  // due to esbuild binary parsing issues in drizzle-kit
+  // Use --webpack flag for development and builds:
+  //   pnpm dev --webpack
+  //   pnpm build --webpack
+  turbopack: {},
+  // Exclude problematic packages from bundling
+  serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild'],
   images: {
     remotePatterns: [
       {
