@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
- * Simplified proxy to handle region selection.
- * Uses Node.js runtime (default in Next.js 16).
+ * Handle incoming requests by enforcing a two-letter country prefix or redirecting to `/us`.
+ *
+ * Passes through requests for static assets, API/admin/_next/favicon routes, and URLs whose first path segment is a lowercase two-letter country code. Redirects the root path `/` to `/us`, and redirects other paths that lack a country code to `/us<original-path>` using HTTP status 307.
+ *
+ * @param request - The incoming Next.js request
+ * @returns A NextResponse that either continues request processing or redirects to the appropriate `/us`-prefixed URL with status 307
  */
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
