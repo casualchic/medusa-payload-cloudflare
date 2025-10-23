@@ -60,6 +60,7 @@ jobs:
       run: pnpm run build
       env:
         NODE_ENV: production
+        TURBOPACK: "0"
 
     - name: Build and Deploy to Cloudflare Workers
       if: github.ref == 'refs/heads/main'
