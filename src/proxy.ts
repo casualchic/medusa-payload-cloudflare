@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
- * Simplified middleware to handle region selection.
- * Compatible with Edge Runtime - no dynamic code generation.
+ * Simplified proxy to handle region selection.
+ * Uses Node.js runtime (default in Next.js 16).
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // Skip middleware for static assets, API routes, admin, etc.

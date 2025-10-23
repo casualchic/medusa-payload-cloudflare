@@ -12,12 +12,11 @@ const nextConfig = {
       fullUrl: true,
     },
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Turbopack is default in Next.js 16
+  turbopack: {},
   images: {
     remotePatterns: [
       {
