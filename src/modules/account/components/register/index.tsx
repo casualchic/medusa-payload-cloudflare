@@ -67,7 +67,7 @@ const Register = ({ setCurrentView }: Props) => {
             data-testid="password-input"
           />
         </div>
-        <ErrorMessage error={message} data-testid="register-error" />
+        <ErrorMessage error={typeof message === 'string' ? message : null} data-testid="register-error" />
         <span className="text-center text-ui-fg-base text-small-regular mt-6">
           By creating an account, you agree to Medusa Store&apos;s{" "}
           <LocalizedClientLink
