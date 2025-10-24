@@ -11,8 +11,9 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart }) => {
 
   const isOpen = searchParams.get("step") === "review"
 
-  const paidByGiftcard =
-    cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
+  // Gift cards are not supported in Medusa v2.11
+  const paidByGiftcard = false
+  // cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
 
   const previousStepsCompleted =
     cart.shipping_address &&

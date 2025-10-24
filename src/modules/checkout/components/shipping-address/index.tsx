@@ -110,7 +110,7 @@ const ShippingAddress = ({
             addressInput={
               mapKeys(formData, (_, key) =>
                 key.replace("shipping_address.", "")
-              ) as HttpTypes.StoreCartAddress
+              ) as unknown as HttpTypes.StoreCartAddress
             }
             onSelect={setFormAddress}
           />

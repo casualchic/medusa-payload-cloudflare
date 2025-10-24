@@ -11,7 +11,7 @@ import { formatPayloadImageUrl, getProductImages } from "../../../../lib/util/pa
 export default async function ProductPreview({
   product,
   isFeatured,
-  _region,
+  region: _region,
 }: {
   product: StoreProductWithPayload
   isFeatured?: boolean

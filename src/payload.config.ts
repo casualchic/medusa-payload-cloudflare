@@ -8,6 +8,14 @@ import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
 
+// CloudflareEnv type definition
+interface CloudflareEnv {
+  PAYLOAD_SECRET?: string
+  DB: D1Database
+  R2: R2Bucket
+  ASSETS: Fetcher
+}
+
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Products } from './collections/Products'
@@ -29,7 +37,9 @@ const cloudflare = isBuildPhase || isTestEnv
       // DB and R2 bindings are not needed as API routes aren't invoked
       env: {
         PAYLOAD_SECRET: process.env.PAYLOAD_SECRET,
-      } as Record<string, unknown>,
+        DB: {} as D1Database,
+        R2: {} as R2Bucket,
+      } as CloudflareEnv & Record<string, unknown>,
     }
   : process.argv.find((value) => value.match(/^(generate|migrate):?/)) || !cloudflareRemoteBindings
     ? await getCloudflareContextFromWrangler()
@@ -41,7 +51,7 @@ if (!cloudflare.env?.PAYLOAD_SECRET && !process.env.PAYLOAD_SECRET) {
   throw new Error('PAYLOAD_SECRET environment variable is required')
 }
 
-const payloadSecret = cloudflare.env?.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET!
+const payloadSecret = (cloudflare.env?.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET!) as string
 
 export default buildConfig({
   admin: {
@@ -57,12 +67,12 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   // database-adapter-config-start
-  db: sqliteD1Adapter({ binding: cloudflare.env.DB }),
+  db: sqliteD1Adapter({ binding: (cloudflare.env as CloudflareEnv).DB }),
   // database-adapter-config-end
   plugins: [
     // storage-adapter-placeholder
     r2Storage({
-      bucket: cloudflare.env.R2,
+      bucket: (cloudflare.env as CloudflareEnv).R2,
       collections: { media: true },
     }),
   ],
@@ -79,7 +89,7 @@ function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
         environment: process.env.CLOUDFLARE_ENV,
         persist: isTest ? true : undefined,
         // Force local mode in test environment by explicitly setting remoteBindings to false
-        experimental: isTest ? { remoteBindings: false } : cloudflareRemoteBindings ? { remoteBindings: true } : undefined,
-      } satisfies GetPlatformProxyOptions),
+        ...(isTest ? { experimental: { remoteBindings: false } } : cloudflareRemoteBindings ? { experimental: { remoteBindings: true } } : {}),
+      } as GetPlatformProxyOptions),
   )
 }

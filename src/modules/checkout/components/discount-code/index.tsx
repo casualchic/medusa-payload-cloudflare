@@ -11,9 +11,7 @@ import ErrorMessage from "../error-message"
 import { SubmitButton } from "../submit-button"
 
 type DiscountCodeProps = {
-  cart: HttpTypes.StoreCart & {
-    promotions: HttpTypes.StorePromotion[]
-  }
+  cart: HttpTypes.StoreCart
 }
 
 const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {

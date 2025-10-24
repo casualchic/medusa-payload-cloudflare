@@ -22,14 +22,18 @@ type ProductActionsProps = {
 const optionsAsKeymap = (
   variantOptions: HttpTypes.StoreProductVariant["options"],
   payloadData: StoreProductWithPayload["payload_product"]
-) => {
+): Record<string, string> => {
   const firstVariant = payloadData?.variants?.[0]
-  return variantOptions?.reduce((acc: Record<string, string>, varopt: unknown) => {
-    acc[varopt.option_id] = firstVariant?.option_values.find(
-      (v) => v.medusa_option_id === varopt.id
-    )?.value || varopt.value
+  return variantOptions?.reduce((acc: Record<string, string>, varopt) => {
+    const optionId = varopt.option_id || ''
+    const id = varopt.id || ''
+    const value = varopt.value || ''
+
+    acc[optionId] = firstVariant?.option_values.find(
+      (v) => v.medusa_option_id === id
+    )?.value || value
     return acc
-  }, {})
+  }, {} as Record<string, string>) || {}
 }
 
 export default function ProductActions({
@@ -113,8 +117,8 @@ export default function ProductActions({
   const inView = useIntersection(actionsRef, "0px")
 
   // add the selected variant to the cart
-  const handleAddToCart = async () => {
-    if (!selectedVariant?.id) return null
+  const handleAddToCart = async (): Promise<void> => {
+    if (!selectedVariant?.id) return
 
     setIsAdding(true)
 

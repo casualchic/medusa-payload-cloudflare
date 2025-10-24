@@ -51,8 +51,9 @@ const Payment = ({
     }
   }
 
-  const paidByGiftcard =
-    cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
+  // Gift cards are not supported in Medusa v2.11
+  const paidByGiftcard = false
+  // cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
 
   const paymentReady =
     (activeSession && cart?.shipping_methods.length !== 0) || paidByGiftcard
