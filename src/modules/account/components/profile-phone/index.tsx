@@ -33,7 +33,7 @@ const ProfilePhone: React.FC<MyInformationProps> = ({ customer }) => {
   }
 
   const [state, formAction] = useActionState(updateCustomerPhone, {
-    error: false,
+    error: null,
     success: false,
   })
 

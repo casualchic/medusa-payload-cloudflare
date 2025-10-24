@@ -30,7 +30,7 @@ const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
   }
 
   const [state, formAction] = useActionState(updateCustomerEmail, {
-    error: false,
+    error: null,
     success: false,
   })
 

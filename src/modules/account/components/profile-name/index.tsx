@@ -34,7 +34,7 @@ const ProfileName: React.FC<MyInformationProps> = ({ customer }) => {
   }
 
   const [state, formAction] = useActionState(updateCustomerName, {
-    error: false,
+    error: null,
     success: false,
   })
 
@@ -52,7 +52,7 @@ const ProfileName: React.FC<MyInformationProps> = ({ customer }) => {
         label="Name"
         currentInfo={`${customer.first_name} ${customer.last_name}`}
         isSuccess={successState}
-        isError={!!state?.error}
+        isError={!!state.error}
         clearState={clearState}
         data-testid="account-name-editor"
       >

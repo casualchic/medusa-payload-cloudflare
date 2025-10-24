@@ -40,7 +40,7 @@ const ProfileBillingAddress: React.FC<MyInformationProps> = ({
   const initialState: Record<string, unknown> = {
     isDefaultBilling: true,
     isDefaultShipping: false,
-    error: false,
+    error: null,
     success: false,
   }
 
