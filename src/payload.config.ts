@@ -27,6 +27,8 @@ const dirname = path.dirname(filename)
 
 // During build or test phase, skip Cloudflare context initialization
 // Tests will skip the integration test that requires D1 (marked as skipped in test file)
+// Note: NEXT_PHASE is set by Next.js during build and explicitly in CI/CD workflows
+// See .github/workflows/deploy.yml for how this is configured in automated builds
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 const isTestEnv = process.env.NODE_ENV === 'test'
 
@@ -46,12 +48,36 @@ const cloudflare = isBuildPhase || isTestEnv
     : await getCloudflareContext({ async: true })
 
 // Validate required environment variables
-// Fail fast in all environments if PAYLOAD_SECRET is missing
-if (!cloudflare.env?.PAYLOAD_SECRET && !process.env.PAYLOAD_SECRET) {
+// During build phase, allow fallback secret for static generation only
+// This enables Next.js to generate static pages without runtime bindings
+// In production runtime, PAYLOAD_SECRET must be set via environment variable
+// Security: The fallback placeholder is only used during build phase
+// and never exposed in production runtime or client-side code
+const BUILD_TIME_SECRET_PLACEHOLDER = '__BUILD_TIME_SECRET_PLACEHOLDER_DO_NOT_USE_IN_PRODUCTION__' as const
+const payloadSecret: string = (() => {
+  const secret = cloudflare.env?.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET
+  if (secret) return secret
+  if (isBuildPhase) return BUILD_TIME_SECRET_PLACEHOLDER
   throw new Error('PAYLOAD_SECRET environment variable is required')
+})()
+
+// Development logging: show secret source during builds for transparency
+if (isBuildPhase && payloadSecret === BUILD_TIME_SECRET_PLACEHOLDER) {
+  if (process.env.CI) {
+    console.warn('[Build Phase] Using fallback PAYLOAD_SECRET for static generation')
+  } else {
+    console.warn('[Build Phase] Using fallback PAYLOAD_SECRET. Set PAYLOAD_SECRET environment variable for production builds.')
+  }
+} else if (isBuildPhase && process.env.CI) {
+  console.info('[Build Phase] Using provided PAYLOAD_SECRET')
 }
 
-const payloadSecret = (cloudflare.env?.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET!) as string
+// Runtime safety check: ensure fallback placeholder is never used in production runtime
+// Exclude build phase since production builds have NODE_ENV='production' AND NEXT_PHASE='phase-production-build'
+// This is a defense-in-depth check - the IIFE above should prevent this, but we validate anyway
+if (process.env.NODE_ENV === 'production' && !isBuildPhase && payloadSecret === BUILD_TIME_SECRET_PLACEHOLDER) {
+  throw new Error('CRITICAL: Build-time placeholder detected in production runtime. PAYLOAD_SECRET environment variable must be set.')
+}
 
 export default buildConfig({
   admin: {

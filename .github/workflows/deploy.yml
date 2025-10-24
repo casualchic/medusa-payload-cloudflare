@@ -65,13 +65,17 @@ jobs:
     # Build with webpack flag instead of Turbopack due to drizzle-kit binary parsing issues
     # --no-deprecation: Suppress deprecation warnings to reduce noise
     # --max-old-space-size=8000: Allocate 8GB memory for large builds
+    # Build strategy:
+    # - PRs: Use empty PAYLOAD_SECRET to test build-time fallback mechanism
+    # - Main: Use real PAYLOAD_SECRET from secrets for production deployment
     - name: Build Next.js application
-      if: github.ref == 'refs/heads/main'
       run: pnpm exec cross-env NODE_OPTIONS="--no-deprecation --max-old-space-size=8000" next build --webpack
       env:
         NODE_ENV: production
         NEXT_PHASE: phase-production-build
-        PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+        # PRs intentionally use empty PAYLOAD_SECRET to validate build-time fallback logic
+        # This ensures the fallback mechanism is tested on every PR
+        PAYLOAD_SECRET: ${{ github.ref == 'refs/heads/main' && secrets.PAYLOAD_SECRET || '' }}
 
     - name: Build and Deploy to Cloudflare Workers
       if: github.ref == 'refs/heads/main'
