@@ -6,6 +6,7 @@ checkEnvVariables()
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone' as const,
   outputFileTracingRoot: __dirname,
   logging: {
     fetches: {
