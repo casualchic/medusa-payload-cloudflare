@@ -29,7 +29,7 @@ const cloudflare = isBuildPhase || isTestEnv
       // DB and R2 bindings are not needed as API routes aren't invoked
       env: {
         PAYLOAD_SECRET: process.env.PAYLOAD_SECRET,
-      } as any,
+      } as Record<string, unknown>,
     }
   : process.argv.find((value) => value.match(/^(generate|migrate):?/)) || !cloudflareRemoteBindings
     ? await getCloudflareContextFromWrangler()

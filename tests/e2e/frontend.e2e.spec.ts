@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test'
 
 test.describe('Frontend', () => {
-  let page: Page
+  let _page: Page
 
   test.beforeAll(async ({ browser }, _testInfo) => {
     const context = await browser.newContext()
