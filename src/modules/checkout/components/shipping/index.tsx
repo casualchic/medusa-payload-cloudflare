@@ -11,7 +11,7 @@ import ErrorMessage from "@modules/checkout/components/error-message"
 import Divider from "@modules/common/components/divider"
 import MedusaRadio from "@modules/common/components/radio"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 const PICKUP_OPTION_ON = "__PICKUP_ON"
 const PICKUP_OPTION_OFF = "__PICKUP_OFF"
@@ -61,8 +61,14 @@ const Shipping: React.FC<ShippingProps> = ({
     )
   }
 
-  const _shippingMethods = availableShippingMethods?.filter(sm => sm && !isPickupMethod(sm)) || []
-  const _pickupMethods = availableShippingMethods?.filter(sm => sm && isPickupMethod(sm)) || []
+  const _shippingMethods = useMemo(
+    () => availableShippingMethods?.filter(sm => sm && !isPickupMethod(sm)) || [],
+    [availableShippingMethods]
+  )
+  const _pickupMethods = useMemo(
+    () => availableShippingMethods?.filter(sm => sm && isPickupMethod(sm)) || [],
+    [availableShippingMethods]
+  )
 
   const hasPickupOptions = !!_pickupMethods?.length
 
@@ -90,7 +96,7 @@ const Shipping: React.FC<ShippingProps> = ({
     if (_pickupMethods?.find((m) => m.id === shippingMethodId)) {
       setShowPickupOptions(PICKUP_OPTION_ON)
     }
-  }, [availableShippingMethods])
+  }, [cart.id, shippingMethodId, _pickupMethods, _shippingMethods])
 
   const handleEdit = () => {
     router.push(pathname + "?step=delivery", { scroll: false })

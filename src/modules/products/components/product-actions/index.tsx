@@ -49,7 +49,7 @@ export default function ProductActions({
       )
       setOptions(variantOptions ?? {})
     }
-  }, [product.variants])
+  }, [product.variants, product.payload_product])
 
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
@@ -63,7 +63,7 @@ export default function ProductActions({
       )
       return isEqual(variantOptions, options)
     })
-  }, [product.variants, options])
+  }, [product.variants, options, product.payload_product])
 
   // update the options when a variant is selected
   const setOptionValue = (optionId: string, value: string) => {
@@ -82,7 +82,7 @@ export default function ProductActions({
       )
       return isEqual(variantOptions, options)
     })
-  }, [product.variants, options])
+  }, [product.variants, options, product.payload_product])
 
   // check if the selected variant is in stock
   const inStock = useMemo(() => {

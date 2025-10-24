@@ -3,7 +3,7 @@ import { Container } from "@medusajs/ui"
 import Checkbox from "@modules/common/components/checkbox"
 import Input from "@modules/common/components/input"
 import { mapKeys } from "lodash"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import AddressSelect from "../address-select"
 import CountrySelect from "../country-select"
 
@@ -45,41 +45,47 @@ const ShippingAddress = ({
     [customer?.addresses, countriesInRegion]
   )
 
-  const setFormAddress = (
+  // Memoize to prevent unnecessary re-renders of useEffect
+  // Empty deps is safe because setFormData from useState is stable
+  const setFormAddress = useCallback((
     address?: HttpTypes.StoreCartAddress,
     email?: string
   ) => {
-    address &&
-      setFormData((prevState: Record<string, string>) => ({
-        ...prevState,
-        "shipping_address.first_name": address?.first_name || "",
-        "shipping_address.last_name": address?.last_name || "",
-        "shipping_address.address_1": address?.address_1 || "",
-        "shipping_address.company": address?.company || "",
-        "shipping_address.postal_code": address?.postal_code || "",
-        "shipping_address.city": address?.city || "",
-        "shipping_address.country_code": address?.country_code || "",
-        "shipping_address.province": address?.province || "",
-        "shipping_address.phone": address?.phone || "",
-      }))
+    setFormData((prevState: Record<string, string>) => {
+      const newState = { ...prevState }
 
-    email &&
-      setFormData((prevState: Record<string, string>) => ({
-        ...prevState,
-        email: email,
-      }))
-  }
+      if (address) {
+        Object.assign(newState, {
+          "shipping_address.first_name": address.first_name || "",
+          "shipping_address.last_name": address.last_name || "",
+          "shipping_address.address_1": address.address_1 || "",
+          "shipping_address.company": address.company || "",
+          "shipping_address.postal_code": address.postal_code || "",
+          "shipping_address.city": address.city || "",
+          "shipping_address.country_code": address.country_code || "",
+          "shipping_address.province": address.province || "",
+          "shipping_address.phone": address.phone || "",
+        })
+      }
+
+      if (email) {
+        newState.email = email
+      }
+
+      return newState
+    })
+  }, [])
 
   useEffect(() => {
     // Ensure cart is not null and has a shipping_address before setting form data
     if (cart && cart.shipping_address) {
-      setFormAddress(cart?.shipping_address, cart?.email)
+      setFormAddress(cart.shipping_address, cart.email)
     }
 
     if (cart && !cart.email && customer?.email) {
       setFormAddress(undefined, customer.email)
     }
-  }, [cart]) // Add cart as a dependency
+  }, [cart, customer.email, setFormAddress])
 
   const handleChange = (
     e: React.ChangeEvent<
