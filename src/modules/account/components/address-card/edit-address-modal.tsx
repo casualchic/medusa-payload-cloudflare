@@ -57,8 +57,14 @@ const EditAddress: React.FC<EditAddressProps> = ({
 
   const removeAddress = async () => {
     setRemoving(true)
-    await deleteCustomerAddress(address.id)
+    const result = await deleteCustomerAddress(address.id)
     setRemoving(false)
+    if (result.success) {
+      close()
+    } else {
+      // Handle error - could set an error state here
+      console.error('Failed to delete address:', result.error)
+    }
   }
 
   return (

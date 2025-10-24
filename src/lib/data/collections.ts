@@ -94,8 +94,6 @@ export const listCollections = async (
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         deleted_at: null,
-        type: null,
-        discount_condition_id: null,
         products: [],
       },
       {
@@ -106,8 +104,6 @@ export const listCollections = async (
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         deleted_at: null,
-        type: null,
-        discount_condition_id: null,
         products: [],
       },
     ]

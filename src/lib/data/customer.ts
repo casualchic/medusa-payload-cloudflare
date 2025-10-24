@@ -76,7 +76,7 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
     .catch(medusaError)
 
   const cacheTag = await getCacheTag('customers')
-  await revalidateTag(cacheTag)
+  await revalidateTag(cacheTag, 'default')
 
   return updateRes
 }
@@ -112,7 +112,7 @@ export async function signup(_currentState: unknown, formData: FormData) {
     await setAuthToken(loginToken as string)
 
     const customerCacheTag = await getCacheTag('customers')
-    await revalidateTag(customerCacheTag)
+    await revalidateTag(customerCacheTag, 'default')
 
     await transferCart()
 
@@ -136,7 +136,7 @@ export async function login(_currentState: unknown, formData: FormData) {
     await sdk.auth.login('customer', 'emailpass', { email, password }).then(async (token) => {
       await setAuthToken(token as string)
       const customerCacheTag = await getCacheTag('customers')
-      await revalidateTag(customerCacheTag)
+      await revalidateTag(customerCacheTag, 'default')
     })
   } catch (error: unknown) {
     return error instanceof Error ? error.message : String(error)
@@ -160,12 +160,12 @@ export async function signout(countryCode: string) {
   await removeAuthToken()
 
   const customerCacheTag = await getCacheTag('customers')
-  await revalidateTag(customerCacheTag)
+  await revalidateTag(customerCacheTag, 'default')
 
   await removeCartId()
 
   const cartCacheTag = await getCacheTag('carts')
-  await revalidateTag(cartCacheTag)
+  await revalidateTag(cartCacheTag, 'default')
 
   redirect(`/${countryCode}/account`)
 }
@@ -187,13 +187,13 @@ export async function transferCart() {
   await sdk.store.cart.transferCart(cartId, {}, headers)
 
   const cartCacheTag = await getCacheTag('carts')
-  await revalidateTag(cartCacheTag)
+  await revalidateTag(cartCacheTag, 'default')
 }
 
 export const addCustomerAddress = async (
   currentState: Record<string, unknown>,
   formData: FormData,
-): Promise<string | HttpTypes.StoreCustomer> => {
+): Promise<{ success: boolean; error: string | null; isDefaultBilling?: boolean; isDefaultShipping?: boolean }> => {
   const isDefaultBilling = (currentState.isDefaultBilling as boolean) || false
   const isDefaultShipping = (currentState.isDefaultShipping as boolean) || false
 
@@ -218,41 +218,43 @@ export const addCustomerAddress = async (
 
   return sdk.store.customer
     .createAddress(address, {}, headers)
-    .then(async () => {
+    .then(async (): Promise<{ success: boolean; error: string | null; isDefaultBilling: boolean; isDefaultShipping: boolean }> => {
       const customerCacheTag = await getCacheTag('customers')
-      await revalidateTag(customerCacheTag)
-      return { success: true, error: null }
+      await revalidateTag(customerCacheTag, 'default')
+      return { success: true, error: null, isDefaultBilling, isDefaultShipping }
     })
-    .catch((err) => {
-      return { success: false, error: err.toString() }
+    .catch((err: unknown) => {
+      const error = err instanceof Error ? err : new Error(String(err))
+      return { success: false, error: error.message, isDefaultBilling, isDefaultShipping }
     })
 }
 
-export const deleteCustomerAddress = async (addressId: string): Promise<void> => {
+export const deleteCustomerAddress = async (addressId: string): Promise<{ success: boolean; error: string | null }> => {
   const headers = {
     ...(await getAuthHeaders()),
   }
 
-  await sdk.store.customer
-    .deleteAddress(addressId, {}, headers)
-    .then(async () => {
+  return sdk.store.customer
+    .deleteAddress(addressId, headers)
+    .then(async (): Promise<{ success: boolean; error: string | null }> => {
       const customerCacheTag = await getCacheTag('customers')
-      await revalidateTag(customerCacheTag)
+      await revalidateTag(customerCacheTag, 'default')
       return { success: true, error: null }
     })
-    .catch((err) => {
-      return { success: false, error: err.toString() }
+    .catch((err: unknown) => {
+      const error = err instanceof Error ? err : new Error(String(err))
+      return { success: false, error: error.message }
     })
 }
 
 export const updateCustomerAddress = async (
   currentState: Record<string, unknown>,
   formData: FormData,
-): Promise<{ success: boolean; error?: string } | HttpTypes.StoreCustomer> => {
+): Promise<{ success: boolean; error?: string | null; addressId?: string }> => {
   const addressId = (currentState.addressId as string) || (formData.get('addressId') as string)
 
   if (!addressId) {
-    return { success: false, error: 'Address ID is required' }
+    return { success: false, error: 'Address ID is required', addressId: undefined }
   }
 
   const address = {
@@ -279,12 +281,13 @@ export const updateCustomerAddress = async (
 
   return sdk.store.customer
     .updateAddress(addressId, address, {}, headers)
-    .then(async () => {
+    .then(async (): Promise<{ success: boolean; error: string | null; addressId: string }> => {
       const customerCacheTag = await getCacheTag('customers')
-      await revalidateTag(customerCacheTag)
-      return { success: true, error: null }
+      await revalidateTag(customerCacheTag, 'default')
+      return { success: true, error: null, addressId }
     })
-    .catch((err) => {
-      return { success: false, error: err.toString() }
+    .catch((err: unknown) => {
+      const error = err instanceof Error ? err : new Error(String(err))
+      return { success: false, error: error.message, addressId }
     })
 }

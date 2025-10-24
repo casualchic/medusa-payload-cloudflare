@@ -58,7 +58,7 @@ const ProfileBillingAddress: React.FC<MyInformationProps> = ({
   }
 
   useEffect(() => {
-    setSuccessState(state.success)
+    setSuccessState(!!state.success)
   }, [state])
 
   const currentInfo = useMemo(() => {

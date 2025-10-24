@@ -1,4 +1,3 @@
-import path from "path"
 import medusaPreset from "@medusajs/ui-preset"
 import tailwindcssRadix from "tailwindcss-radix"
 

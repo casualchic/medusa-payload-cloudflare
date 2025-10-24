@@ -89,8 +89,11 @@ export const createTransferRequest = async (
       },
       headers
     )
-    .then(({ order }) => ({ success: true, error: null, order }))
-    .catch((err) => ({ success: false, error: err.message, order: null }))
+    .then(({ order }): { success: boolean; error: string | null; order: HttpTypes.StoreOrder } => ({ success: true, error: null, order }))
+    .catch((err: unknown): { success: boolean; error: string; order: null } => {
+      const error = err instanceof Error ? err : new Error(String(err))
+      return { success: false, error: error.message, order: null }
+    })
 }
 
 export const acceptTransferRequest = async (id: string, token: string) => {
@@ -98,8 +101,11 @@ export const acceptTransferRequest = async (id: string, token: string) => {
 
   return await sdk.store.order
     .acceptTransfer(id, { token }, {}, headers)
-    .then(({ order }) => ({ success: true, error: null, order }))
-    .catch((err) => ({ success: false, error: err.message, order: null }))
+    .then(({ order }): { success: boolean; error: string | null; order: HttpTypes.StoreOrder } => ({ success: true, error: null, order }))
+    .catch((err: unknown): { success: boolean; error: string; order: null } => {
+      const error = err instanceof Error ? err : new Error(String(err))
+      return { success: false, error: error.message, order: null }
+    })
 }
 
 export const declineTransferRequest = async (id: string, token: string) => {
@@ -107,6 +113,9 @@ export const declineTransferRequest = async (id: string, token: string) => {
 
   return await sdk.store.order
     .declineTransfer(id, { token }, {}, headers)
-    .then(({ order }) => ({ success: true, error: null, order }))
-    .catch((err) => ({ success: false, error: err.message, order: null }))
+    .then(({ order }): { success: boolean; error: string | null; order: HttpTypes.StoreOrder } => ({ success: true, error: null, order }))
+    .catch((err: unknown): { success: boolean; error: string; order: null } => {
+      const error = err instanceof Error ? err : new Error(String(err))
+      return { success: false, error: error.message, order: null }
+    })
 }

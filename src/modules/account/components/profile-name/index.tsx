@@ -28,7 +28,8 @@ const ProfileName: React.FC<MyInformationProps> = ({ customer }) => {
       await updateCustomer(customer)
       return { success: true, error: null }
     } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : String(error) }
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      return { success: false, error: errorMessage }
     }
   }
 

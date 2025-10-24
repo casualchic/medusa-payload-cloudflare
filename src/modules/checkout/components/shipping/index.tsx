@@ -21,32 +21,6 @@ type ShippingProps = {
   availableShippingMethods: HttpTypes.StoreCartShippingOption[] | null
 }
 
-function formatAddress(address: HttpTypes.StoreCartAddress) {
-  if (!address) {
-    return ""
-  }
-
-  let ret = ""
-
-  if (address.address_1) {
-    ret += ` ${address.address_1}`
-  }
-
-  if (address.address_2) {
-    ret += `, ${address.address_2}`
-  }
-
-  if (address.postal_code) {
-    ret += `, ${address.postal_code} ${address.city}`
-  }
-
-  if (address.country_code) {
-    ret += `, ${address.country_code.toUpperCase()}`
-  }
-
-  return ret
-}
-
 const Shipping: React.FC<ShippingProps> = ({
   cart,
   availableShippingMethods,
@@ -209,7 +183,7 @@ const Shipping: React.FC<ShippingProps> = ({
                 {hasPickupOptions && (
                   <RadioGroup
                     value={showPickupOptions}
-                    onChange={(value) => {
+                    onChange={(_value) => {
                       const id = _pickupMethods.find(
                         (option) => !option.insufficient_inventory
                       )?.id

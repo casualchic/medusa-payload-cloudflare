@@ -24,6 +24,7 @@ const AddAddress = ({
 
   const [formState, formAction] = useActionState(addCustomerAddress, {
     isDefaultShipping: addresses.length === 0,
+    isDefaultBilling: addresses.length === 0,
     success: false,
     error: null,
   })
