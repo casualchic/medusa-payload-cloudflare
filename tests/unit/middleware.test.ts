@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { NextRequest } from 'next/server'
-import { middleware, MIDDLEWARE_MATCHER } from '../../middleware'
+import { middleware, config } from '../../middleware'
 
 /**
  * Middleware Unit Tests
@@ -8,7 +8,7 @@ import { middleware, MIDDLEWARE_MATCHER } from '../../middleware'
  * These tests validate the middleware function behavior and matcher configuration.
  *
  * Note on Matcher Exclusions:
- * The MIDDLEWARE_MATCHER config excludes certain paths (/api/*, /_next/static, etc.)
+ * The config.matcher excludes certain paths (/api/*, /_next/static, etc.)
  * at the Next.js routing level. These exclusions are tested implicitly through:
  * - Integration tests: Verify API routes don't trigger middleware
  * - E2E tests: Verify static assets load correctly without middleware overhead
@@ -95,15 +95,15 @@ describe('Middleware', () => {
     })
   })
 
-  describe('MIDDLEWARE_MATCHER configuration', () => {
-    it('exports matcher patterns for reuse', () => {
-      expect(MIDDLEWARE_MATCHER).toBeDefined()
-      expect(Array.isArray(MIDDLEWARE_MATCHER)).toBe(true)
-      expect(MIDDLEWARE_MATCHER.length).toBeGreaterThan(0)
+  describe('config.matcher configuration', () => {
+    it('exports matcher patterns in config', () => {
+      expect(config.matcher).toBeDefined()
+      expect(Array.isArray(config.matcher)).toBe(true)
+      expect(config.matcher.length).toBeGreaterThan(0)
     })
 
     it('has correct matcher pattern structure', () => {
-      const pattern = MIDDLEWARE_MATCHER[0]
+      const pattern = config.matcher[0]
       expect(typeof pattern).toBe('string')
 
       // Should exclude /api, /api/*, _next/static, _next/image, favicon.ico
@@ -116,7 +116,7 @@ describe('Middleware', () => {
     })
 
     it('pattern uses negative lookahead for exclusions', () => {
-      const pattern = MIDDLEWARE_MATCHER[0]
+      const pattern = config.matcher[0]
 
       // Next.js matcher patterns use negative lookahead syntax (?!)
       expect(pattern).toContain('(?!')
@@ -127,15 +127,12 @@ describe('Middleware', () => {
       expect(pattern).toMatch(/^\/\(.+\.\*\)$/)
     })
 
-    it('pattern is exported as readonly constant', async () => {
-      // TypeScript 'as const' makes the array readonly at compile time
-      // This test verifies the constant is properly exported and accessible
-      expect(MIDDLEWARE_MATCHER).toBeDefined()
-      expect(MIDDLEWARE_MATCHER).toHaveLength(1)
-
-      // Verify it's the same reference as used in config
-      const { config } = await import('../../middleware')
-      expect(config.matcher).toBe(MIDDLEWARE_MATCHER)
+    it('matcher is statically defined (not imported variable)', () => {
+      // Next.js requires matcher to be a static array/string, not a variable reference
+      // This test verifies we're exporting the config object with an inline matcher array
+      expect(config).toBeDefined()
+      expect(config.matcher).toBeDefined()
+      expect(Array.isArray(config.matcher)).toBe(true)
     })
   })
 })

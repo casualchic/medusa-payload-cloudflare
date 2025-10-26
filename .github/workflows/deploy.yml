@@ -39,6 +39,17 @@ jobs:
       with:
         fetch-depth: 1  # Shallow clone for faster checkout
 
+    # Validate workflow syntax early to catch configuration errors
+    - name: Validate Workflow Syntax
+      run: |
+        echo "Validating GitHub Actions workflow syntax..."
+        # Check if workflow files are valid YAML
+        for workflow in .github/workflows/*.yml; do
+          echo "Validating $workflow"
+          python3 -c "import yaml, sys; yaml.safe_load(open('$workflow'))" || exit 1
+        done
+        echo "✅ All workflow files are valid YAML"
+
     # Setup pnpm BEFORE Node.js to enable built-in caching
     # Pin to specific commit SHA for security (best practice)
     - name: Setup pnpm
@@ -103,8 +114,10 @@ jobs:
     # Validate production secrets BEFORE building to fail fast
     # CRITICAL: This must run before the production build to prevent building with weak/test secrets
     # Focus on entropy and length rather than pattern matching to avoid false positives
+    # Only run secret validation on direct pushes to main (not on PR events)
+    # This ensures production secrets are validated before deployment
     - name: Validate Production Secrets
-      if: github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         set -euo pipefail
         export LC_ALL=C
@@ -152,7 +165,7 @@ jobs:
 
     # Validate Cloudflare credentials before attempting deployment
     - name: Validate Cloudflare Credentials
-      if: github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         set -euo pipefail
         [[ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]] && { echo "❌ Missing CLOUDFLARE_API_TOKEN"; exit 1; }
@@ -160,8 +173,11 @@ jobs:
         echo "✅ Cloudflare credentials present"
 
     # Production build (main branch) - requires real PAYLOAD_SECRET (validated above)
+    # TEMPORARY: Using webpack instead of Turbopack due to drizzle-kit binary parsing issue
+    # See: https://github.com/payloadcms/payload/issues/8959
+    # Once Turbopack properly handles esbuild binaries, remove --webpack flag
     - name: Build Next.js application (Production)
-      if: github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: pnpm exec cross-env NODE_OPTIONS="--no-deprecation --max-old-space-size=8000" next build --webpack
       env:
         NODE_ENV: production
@@ -188,8 +204,11 @@ jobs:
     #
     # For more context, see: BUILD_PIPELINE.md
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # TEMPORARY: Using webpack instead of Turbopack due to drizzle-kit binary parsing issue
+    # See: https://github.com/payloadcms/payload/issues/8959
+    # Once Turbopack properly handles esbuild binaries, remove --webpack flag
     - name: Build Next.js application (PR)
-      if: github.ref != 'refs/heads/main'
+      if: github.event_name == 'pull_request'
       run: pnpm exec cross-env NODE_OPTIONS="--no-deprecation --max-old-space-size=8000" next build --webpack
       env:
         NODE_ENV: production
@@ -204,7 +223,7 @@ jobs:
         NEXT_TELEMETRY_DISABLED: '1'
 
     - name: Build and Deploy to Cloudflare Workers
-      if: github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         pnpm exec opennextjs-cloudflare build --skipNextBuild --env production
         pnpm exec opennextjs-cloudflare deploy --env production

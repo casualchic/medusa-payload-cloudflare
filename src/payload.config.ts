@@ -21,6 +21,7 @@ import { Media } from './collections/Media'
 import { Products } from './collections/Products'
 import { ProductVariants } from './collections/ProductVariants'
 import { ProductOptions } from './collections/ProductOptions'
+import { Pages } from './collections/Pages'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -86,8 +87,12 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Products, ProductVariants, ProductOptions],
-  editor: lexicalEditor(),
+  collections: [Users, Media, Products, ProductVariants, ProductOptions, Pages],
+  editor: lexicalEditor({
+    features: ({ defaultFeatures }) =>
+      // Remove HTML feature to prevent XSS attacks
+      defaultFeatures.filter((feature) => feature.key !== 'html'),
+  }),
   secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

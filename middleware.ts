@@ -25,8 +25,10 @@ export function middleware(_request: NextRequest) {
 }
 
 /**
- * Matcher patterns for middleware execution.
- * Exported for reuse in tests and configuration.
+ * Next.js middleware configuration.
+ *
+ * IMPORTANT: The matcher must be a static string or array of strings for Next.js to parse at build time.
+ * Cannot use imported constants or variables.
  *
  * Current exclusions:
  * - /api/* - API routes (handled by route handlers)
@@ -46,25 +48,20 @@ export function middleware(_request: NextRequest) {
  * - Add /_vercel/ if deploying to Vercel
  * - Consider service worker routes if implementing PWA
  */
-export const MIDDLEWARE_MATCHER = [
-  /*
-   * Match all request paths except for the ones starting with:
-   * - /api or /api/* (API routes)
-   * - /_next/static/* (static files)
-   * - /_next/image/* (image optimization files)
-   * - /favicon.ico (exact match)
-   *
-   * Note: Uses negative lookahead with (?:/|$) to match both:
-   * - /api (exact match using $)
-   * - /api/... (paths with trailing slash using /)
-   * This prevents false positives like /api-docs while catching /api alone.
-   */
-  '/((?!api(?:/|$)|_next/static|_next/image|favicon\\.ico).*)',
-] as const
-
-/**
- * Next.js middleware configuration.
- */
 export const config = {
-  matcher: MIDDLEWARE_MATCHER,
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - /api or /api/* (API routes)
+     * - /_next/static/* (static files)
+     * - /_next/image/* (image optimization files)
+     * - /favicon.ico (exact match)
+     *
+     * Note: Uses negative lookahead with (?:/|$) to match both:
+     * - /api (exact match using $)
+     * - /api/... (paths with trailing slash using /)
+     * This prevents false positives like /api-docs while catching /api alone.
+     */
+    '/((?!api(?:/|$)|_next/static|_next/image|favicon\\.ico).*)',
+  ],
 }

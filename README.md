@@ -11,6 +11,26 @@ A modern e-commerce storefront built with Next.js, Payload CMS, and Medusa, depl
 - **Database**: Cloudflare D1 (SQLite)
 - **Deployment**: Cloudflare Workers with OpenNext.js
 
+## 📚 Documentation
+
+### Core Guides
+- **[Pages Collection Guide](README_PAGES.md)** - Comprehensive guide to the flexible page builder system
+  - 7 content blocks (Hero, Products, Text, Gallery, CTA, Video, Testimonials)
+  - Backend implementation details
+  - Frontend patterns and examples
+  - Performance optimization strategies
+
+### Additional Documentation
+- **[Implementation Summary](IMPLEMENTATION_SUMMARY.md)** - Overview, features, and deployment checklist
+- **[Next.js RSC Patterns](NEXTJS_RSC_PATTERNS.md)** - React Server Components architecture
+- **[Advanced Optimizations](ADVANCED_OPTIMIZATIONS.md)** - Performance tuning and caching
+- **[Build Pipeline](BUILD_PIPELINE.md)** - CI/CD workflow and build optimization
+- **[Security Enhancements](docs/SECURITY_ENHANCEMENTS.md)** - Security best practices
+
+### Architecture Decision Records (ADRs)
+- **[ADR Index](docs/adr/README.md)** - All architectural decisions
+- **[ADR 001: Pages Collection](docs/adr/001-pages-collection-architecture.md)** - Block-based page builder architecture
+
 ## 🚀 How to Run
 
 ### Prerequisites
@@ -216,6 +236,7 @@ src/
 | `DATABASE_URI` | Database connection string | Yes |
 | `NEXT_PUBLIC_SERVER_URL` | Public server URL | Yes |
 | `NEXT_PUBLIC_MEDUSA_BACKEND_URL` | Medusa backend URL | Yes |
+| `ALLOWED_REDIRECT_DOMAINS` | Comma-separated whitelist of allowed redirect domains (e.g., `example.com,trusted-site.org`) for URL validation security | No |
 
 ### Cloudflare Configuration
 

@@ -72,6 +72,7 @@ export interface Config {
     products: Product;
     'product-variants': ProductVariant;
     'product-options': ProductOption;
+    pages: Page;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -83,6 +84,7 @@ export interface Config {
     products: ProductsSelect<false> | ProductsSelect<true>;
     'product-variants': ProductVariantsSelect<false> | ProductVariantsSelect<true>;
     'product-options': ProductOptionsSelect<false> | ProductOptionsSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -360,6 +362,383 @@ export interface ProductOption {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  /**
+   * Page title (used in browser tab and navigation)
+   */
+  title: string;
+  /**
+   * URL-friendly identifier (auto-generated from title if empty)
+   */
+  slug: string;
+  /**
+   * Page publication status
+   */
+  status: 'draft' | 'published' | 'archived';
+  /**
+   * Publication date (optional, defaults to first publish)
+   */
+  publishedAt?: string | null;
+  /**
+   * Build your page with flexible content blocks
+   */
+  content: (
+    | HeroBlock
+    | FeaturedProductsBlock
+    | TextBlock
+    | ImageGalleryBlock
+    | CTABlock
+    | VideoBlock
+    | TestimonialsBlock
+  )[];
+  seo?: {
+    /**
+     * Override default page title for search engines (50-60 chars)
+     */
+    title?: string | null;
+    /**
+     * Meta description for search results (150-160 chars)
+     */
+    description?: string | null;
+    /**
+     * Comma-separated keywords (optional, mainly for internal use)
+     */
+    keywords?: string | null;
+    /**
+     * Social sharing image (recommended: 1200x630px)
+     */
+    image?: (number | null) | Media;
+    /**
+     * Prevent search engines from indexing this page
+     */
+    noIndex?: boolean | null;
+    /**
+     * Canonical URL (leave empty to use default)
+     */
+    canonical?: string | null;
+  };
+  /**
+   * Add custom CSS for this page (advanced users only)
+   */
+  customCSS?: string | null;
+  /**
+   * Add custom JavaScript for this page (advanced users only)
+   */
+  customJS?: string | null;
+  /**
+   * Page layout variant
+   */
+  layout?: ('default' | 'wide' | 'narrow' | 'fullwidth') | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock".
+ */
+export interface HeroBlock {
+  /**
+   * Main heading text
+   */
+  heading: string;
+  /**
+   * Subheading or tagline
+   */
+  subheading?: string | null;
+  /**
+   * Hero background image (recommended: 1920x1080px)
+   */
+  backgroundImage: number | Media;
+  /**
+   * Dark overlay opacity (0-100%)
+   */
+  overlayOpacity?: number | null;
+  textAlign?: ('left' | 'center' | 'right') | null;
+  height?: ('small' | 'medium' | 'large' | 'fullscreen') | null;
+  cta?: {
+    /**
+     * Call-to-action button text
+     */
+    text?: string | null;
+    /**
+     * Button destination URL
+     */
+    link?: string | null;
+    style?: ('primary' | 'secondary' | 'outline') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeaturedProductsBlock".
+ */
+export interface FeaturedProductsBlock {
+  /**
+   * Section heading (e.g., "New Arrivals", "Best Sellers")
+   */
+  heading?: string | null;
+  /**
+   * Optional section description
+   */
+  description?: string | null;
+  /**
+   * How to select products to display
+   */
+  displayMode: 'manual' | 'latest' | 'random';
+  /**
+   * Select specific products to feature
+   */
+  products?: (number | Product)[] | null;
+  /**
+   * Number of products to display (1-12)
+   */
+  limit?: number | null;
+  layout?: ('grid' | 'carousel') | null;
+  columns?: ('2' | '3' | '4') | null;
+  /**
+   * Display product prices
+   */
+  showPrice?: boolean | null;
+  /**
+   * Enable quick view button on hover
+   */
+  showQuickView?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featuredProducts';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextBlock".
+ */
+export interface TextBlock {
+  /**
+   * Rich text content with formatting options
+   */
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Content container width
+   */
+  width?: ('narrow' | 'normal' | 'wide' | 'full') | null;
+  textAlign?: ('left' | 'center' | 'right') | null;
+  /**
+   * Section background color
+   */
+  backgroundColor?: ('transparent' | 'white' | 'gray-50' | 'brand-primary' | 'brand-secondary') | null;
+  /**
+   * Vertical padding
+   */
+  padding?: ('none' | 'small' | 'normal' | 'large') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'text';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImageGalleryBlock".
+ */
+export interface ImageGalleryBlock {
+  /**
+   * Optional gallery heading
+   */
+  heading?: string | null;
+  /**
+   * Add up to 12 images
+   */
+  images: {
+    image: number | Media;
+    /**
+     * Optional image caption
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  layout: 'grid' | 'masonry' | 'carousel';
+  columns?: ('2' | '3' | '4') | null;
+  /**
+   * Image aspect ratio for grid layout
+   */
+  aspectRatio?: ('square' | 'landscape' | 'portrait' | 'wide' | 'original') | null;
+  /**
+   * Allow clicking images to view full-size in lightbox
+   */
+  enableLightbox?: boolean | null;
+  /**
+   * Spacing between images
+   */
+  gap?: ('none' | 'small' | 'normal' | 'large') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'imageGallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CTABlock".
+ */
+export interface CTABlock {
+  /**
+   * Main CTA heading
+   */
+  heading: string;
+  /**
+   * Supporting text or description
+   */
+  description?: string | null;
+  /**
+   * Add up to 3 buttons
+   */
+  buttons: {
+    text: string;
+    /**
+     * Button destination URL
+     */
+    link: string;
+    style?: ('primary' | 'secondary' | 'outline' | 'ghost') | null;
+    openInNewTab?: boolean | null;
+    id?: string | null;
+  }[];
+  layout?: ('centered' | 'left' | 'right' | 'split') | null;
+  /**
+   * Optional background image
+   */
+  backgroundImage?: (number | null) | Media;
+  /**
+   * Background color (when no image is set)
+   */
+  backgroundColor?: ('transparent' | 'white' | 'gray-50' | 'dark' | 'brand-primary' | 'brand-secondary') | null;
+  /**
+   * Background image overlay opacity (0-100%)
+   */
+  overlayOpacity?: number | null;
+  /**
+   * Vertical padding
+   */
+  padding?: ('small' | 'normal' | 'large' | 'xlarge') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "VideoBlock".
+ */
+export interface VideoBlock {
+  /**
+   * Video source type
+   */
+  videoType: 'youtube' | 'vimeo' | 'direct';
+  /**
+   * YouTube or Vimeo video ID
+   */
+  videoId?: string | null;
+  /**
+   * Direct video URL (MP4, WebM, etc.)
+   */
+  videoUrl?: string | null;
+  /**
+   * Optional poster/thumbnail image
+   */
+  posterImage?: (number | null) | Media;
+  aspectRatio?: ('16:9' | '4:3' | '1:1' | '9:16') | null;
+  /**
+   * Optional video caption
+   */
+  caption?: string | null;
+  /**
+   * Autoplay video (muted)
+   */
+  autoplay?: boolean | null;
+  /**
+   * Loop video playback
+   */
+  loop?: boolean | null;
+  /**
+   * Show video controls
+   */
+  controls?: boolean | null;
+  /**
+   * Video container width
+   */
+  width?: ('narrow' | 'normal' | 'wide' | 'full') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'video';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock".
+ */
+export interface TestimonialsBlock {
+  /**
+   * Section heading (e.g., "What Our Customers Say")
+   */
+  heading?: string | null;
+  /**
+   * Add customer testimonials
+   */
+  testimonials: {
+    /**
+     * Customer testimonial text
+     */
+    quote: string;
+    /**
+     * Customer name
+     */
+    customerName: string;
+    /**
+     * Customer title or location (optional)
+     */
+    customerTitle?: string | null;
+    /**
+     * Customer photo (optional)
+     */
+    customerImage?: (number | null) | Media;
+    /**
+     * Star rating (1-5, optional)
+     */
+    rating?: number | null;
+    id?: string | null;
+  }[];
+  layout?: ('grid' | 'carousel' | 'single') | null;
+  columns?: ('1' | '2' | '3') | null;
+  /**
+   * Display customer images
+   */
+  showImages?: boolean | null;
+  /**
+   * Display star ratings
+   */
+  showRatings?: boolean | null;
+  /**
+   * Section background color
+   */
+  backgroundColor?: ('transparent' | 'white' | 'gray-50' | 'brand-primary') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonials';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -384,6 +763,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'product-options';
         value: number | ProductOption;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: number | Page;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -523,6 +906,181 @@ export interface ProductOptionsSelect<T extends boolean = true> {
   metadata?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  status?: T;
+  publishedAt?: T;
+  content?:
+    | T
+    | {
+        hero?: T | HeroBlockSelect<T>;
+        featuredProducts?: T | FeaturedProductsBlockSelect<T>;
+        text?: T | TextBlockSelect<T>;
+        imageGallery?: T | ImageGalleryBlockSelect<T>;
+        cta?: T | CTABlockSelect<T>;
+        video?: T | VideoBlockSelect<T>;
+        testimonials?: T | TestimonialsBlockSelect<T>;
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        keywords?: T;
+        image?: T;
+        noIndex?: T;
+        canonical?: T;
+      };
+  customCSS?: T;
+  customJS?: T;
+  layout?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock_select".
+ */
+export interface HeroBlockSelect<T extends boolean = true> {
+  heading?: T;
+  subheading?: T;
+  backgroundImage?: T;
+  overlayOpacity?: T;
+  textAlign?: T;
+  height?: T;
+  cta?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+        style?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeaturedProductsBlock_select".
+ */
+export interface FeaturedProductsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  description?: T;
+  displayMode?: T;
+  products?: T;
+  limit?: T;
+  layout?: T;
+  columns?: T;
+  showPrice?: T;
+  showQuickView?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextBlock_select".
+ */
+export interface TextBlockSelect<T extends boolean = true> {
+  content?: T;
+  width?: T;
+  textAlign?: T;
+  backgroundColor?: T;
+  padding?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImageGalleryBlock_select".
+ */
+export interface ImageGalleryBlockSelect<T extends boolean = true> {
+  heading?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  layout?: T;
+  columns?: T;
+  aspectRatio?: T;
+  enableLightbox?: T;
+  gap?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CTABlock_select".
+ */
+export interface CTABlockSelect<T extends boolean = true> {
+  heading?: T;
+  description?: T;
+  buttons?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+        style?: T;
+        openInNewTab?: T;
+        id?: T;
+      };
+  layout?: T;
+  backgroundImage?: T;
+  backgroundColor?: T;
+  overlayOpacity?: T;
+  padding?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "VideoBlock_select".
+ */
+export interface VideoBlockSelect<T extends boolean = true> {
+  videoType?: T;
+  videoId?: T;
+  videoUrl?: T;
+  posterImage?: T;
+  aspectRatio?: T;
+  caption?: T;
+  autoplay?: T;
+  loop?: T;
+  controls?: T;
+  width?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock_select".
+ */
+export interface TestimonialsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  testimonials?:
+    | T
+    | {
+        quote?: T;
+        customerName?: T;
+        customerTitle?: T;
+        customerImage?: T;
+        rating?: T;
+        id?: T;
+      };
+  layout?: T;
+  columns?: T;
+  showImages?: T;
+  showRatings?: T;
+  backgroundColor?: T;
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

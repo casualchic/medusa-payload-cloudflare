@@ -1,0 +1,7 @@
+export { HeroBlock } from './HeroBlock'
+export { FeaturedProductsBlock } from './FeaturedProductsBlock'
+export { TextBlock } from './TextBlock'
+export { ImageGalleryBlock } from './ImageGalleryBlock'
+export { CTABlock } from './CTABlock'
+export { VideoBlock } from './VideoBlock'
+export { TestimonialsBlock } from './TestimonialsBlock'
