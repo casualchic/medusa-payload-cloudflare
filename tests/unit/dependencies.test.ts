@@ -2,6 +2,17 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync, existsSync } from 'fs'
 import { resolve } from 'path'
 
+/**
+ * Critical Dependencies Configuration Tests
+ *
+ * These unit tests verify the @opentelemetry/api exclusion configuration.
+ * Integration testing (Next.js build/start) is covered by CI workflow.
+ *
+ * Test Coverage:
+ * - Unit: Configuration presence and correctness (this file)
+ * - Integration: Full build process in .github/workflows/deploy.yml
+ * - Runtime: Development check in scripts/verify-dependencies.cjs
+ */
 describe('Critical Dependencies Configuration', () => {
   it('should have @opentelemetry/api in serverExternalPackages', () => {
     const nextConfigPath = resolve(process.cwd(), 'next.config.ts')
