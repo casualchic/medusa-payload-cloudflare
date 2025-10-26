@@ -47,6 +47,9 @@ describe('Critical Dependencies Configuration', () => {
     // Verify @opentelemetry/api is not in the lockfile packages section
     // This ensures pnpm doesn't auto-install it as a peer dependency
     // Match any package entry with @ version separator (simplest and most comprehensive)
+    // Note: Pattern is intentionally simple - '@opentelemetry/api@' reliably identifies package entries
+    // Edge case: Could theoretically match if package name appears in comments, but pnpm lockfiles
+    // don't contain comments and use consistent structured format
     expect(lockfileContent).not.toMatch(/@opentelemetry\/api@/)
   })
 

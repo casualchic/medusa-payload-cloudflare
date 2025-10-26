@@ -182,6 +182,9 @@ Result: Package never installed → Never bundled → Deployment succeeds
 ```bash
 # Verify the package is not installed
 pnpm install && test ! -d node_modules/@opentelemetry/api && echo "✅ Not installed"
+
+# Quick health check - run periodically after dependency updates
+pnpm why @opentelemetry/api 2>&1 | grep -q "not found" && echo "✅ Correctly excluded" || echo "⚠️  Package detected"
 ```
 
 **Test Coverage:**
@@ -219,6 +222,8 @@ If `@opentelemetry/api` appears in `node_modules` after dependency updates:
    cat package.json | grep -A 5 "peerDependencyRules"
    ```
    Should show: `"ignoreMissing": ["@opentelemetry/api"]`
+
+   Note: JSON doesn't support inline comments. Configuration is documented here instead of in package.json.
 
 2. **Clean Install:**
    ```bash
