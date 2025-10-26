@@ -180,6 +180,13 @@ pnpm install && test ! -d node_modules/@opentelemetry/api && echo "✅ Not insta
 **Test Coverage:**
 - Regression tests in `tests/unit/dependencies.test.ts` prevent accidental removal of configuration
 - Tests verify serverExternalPackages, peerDependencyRules, and package absence in lockfile
+- CI workflow validates successful build without the package (integration test)
+
+**Future Monitoring:**
+If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) peer dependency:
+- Unit tests will continue passing (package correctly excluded)
+- Build may fail if package becomes truly required
+- Solution: Re-evaluate externalization approach or investigate Cloudflare Workers OpenTelemetry support
 
 ### 7. **Turbopack Build Support (Drizzle ORM Compatibility)**
 
