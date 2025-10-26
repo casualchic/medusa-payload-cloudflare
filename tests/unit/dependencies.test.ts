@@ -12,6 +12,8 @@ import { resolve } from 'path'
  * - Unit: Configuration presence and correctness (this file)
  * - Integration: Full build process in .github/workflows/deploy.yml
  * - Runtime: Development check in scripts/verify-dependencies.cjs
+ *
+ * For complete context and troubleshooting, see: DEPLOYMENT_LEARNINGS.md section 6
  */
 describe('Critical Dependencies Configuration', () => {
   it('should have @opentelemetry/api in serverExternalPackages', () => {
