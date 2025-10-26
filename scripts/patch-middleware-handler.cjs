@@ -17,25 +17,27 @@ if (!fs.existsSync(handlerPath)) {
 let content = fs.readFileSync(handlerPath, 'utf8');
 
 // Check if already patched
-if (content.includes('// PATCHED: createRequire fallback')) {
-  console.log('✓ Middleware handler already patched for createRequire');
+if (content.includes('// PATCHED: Handle undefined import.meta.url')) {
+  console.log('✓ Middleware handler already patched for import.meta.url');
   process.exit(0);
 }
 
-// Find and replace the createRequire call
-// The pattern is typically: createRequire(import.meta.url)
-const createRequirePattern = /createRequire\(import\.meta\.url\)/g;
+// Find and replace the topLevelCreateRequire call
+// The actual pattern in the handler is: const require = topLevelCreateRequire(import.meta.url);
+const topLevelCreateRequirePattern = /const require = topLevelCreateRequire\(import\.meta\.url\);/;
 
-if (content.match(createRequirePattern)) {
+if (content.match(topLevelCreateRequirePattern)) {
   // Replace with a safe version that handles undefined import.meta.url
   content = content.replace(
-    createRequirePattern,
-    '// PATCHED: createRequire fallback for Cloudflare Workers\n' +
-    '(typeof import.meta.url !== "undefined" ? createRequire(import.meta.url) : (() => { throw new Error("require not available"); }))'
+    topLevelCreateRequirePattern,
+    '// PATCHED: Handle undefined import.meta.url in Cloudflare Workers\n' +
+    'const require = typeof import.meta.url !== "undefined" ? topLevelCreateRequire(import.meta.url) : (() => { const notAvailable = () => { throw new Error("require() is not available in Cloudflare Workers"); }; notAvailable.resolve = notAvailable; return notAvailable; })();'
   );
 
   fs.writeFileSync(handlerPath, content, 'utf8');
   console.log('✓ Patched middleware handler.mjs to handle undefined import.meta.url');
 } else {
-  console.log('⚠️  Could not find createRequire pattern to patch');
+  console.log('⚠️  Could not find topLevelCreateRequire pattern to patch');
+  // Log first 500 chars to help debug
+  console.log('First 500 chars of handler.mjs:', content.substring(0, 500));
 }
