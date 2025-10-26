@@ -19,24 +19,33 @@ const yarnLockExists = fs.existsSync(path.resolve(process.cwd(), 'yarn.lock'))
 
 // Warn if using wrong package manager (detected by lockfile or execpath)
 if ((npmLockExists || yarnLockExists || (execPath && !execPath.includes('pnpm'))) && pnpmLockExists) {
-  console.warn('\n⚠️  WARNING: This project requires pnpm')
-  console.warn('   npm and yarn handle peer dependencies differently')
-  console.warn('   This may cause @opentelemetry/api to be auto-installed')
-  console.warn('\n   Install pnpm: npm install -g pnpm')
-  console.warn('   Then run: pnpm install\n')
+  console.warn('\n' + '='.repeat(60))
+  console.warn('⚠️  WARNING: This project requires pnpm')
+  console.warn('='.repeat(60))
+  console.warn('npm and yarn handle peer dependencies differently')
+  console.warn('This may cause @opentelemetry/api to be auto-installed')
+  console.warn('')
+  console.warn('Install pnpm: npm install -g pnpm')
+  console.warn('Then run: pnpm install')
+  console.warn('='.repeat(60) + '\n')
 }
 
 const apiPath = path.resolve(process.cwd(), 'node_modules/@opentelemetry/api')
 
 if (fs.existsSync(apiPath)) {
-  console.error('\n⚠️  WARNING: @opentelemetry/api is installed')
-  console.error('   This package causes deployment failures on Cloudflare Workers')
-  console.error('   It should be excluded via peerDependencyRules.ignoreMissing')
-  console.error('\n   To fix:')
-  console.error('   1. Check package.json has peerDependencyRules.ignoreMissing: ["@opentelemetry/api"]')
-  console.error('   2. Run: rm -rf node_modules pnpm-lock.yaml')
-  console.error('   3. Run: pnpm install')
-  console.error('\n   See: DEPLOYMENT_LEARNINGS.md section 6\n')
+  console.error('\n' + '='.repeat(60))
+  console.error('❌ ERROR: @opentelemetry/api is installed')
+  console.error('='.repeat(60))
+  console.error('This package causes deployment failures on Cloudflare Workers')
+  console.error('It should be excluded via peerDependencyRules.ignoreMissing')
+  console.error('')
+  console.error('To fix:')
+  console.error('1. Check package.json has peerDependencyRules.ignoreMissing')
+  console.error('2. Run: rm -rf node_modules pnpm-lock.yaml')
+  console.error('3. Run: pnpm install')
+  console.error('')
+  console.error('See: DEPLOYMENT_LEARNINGS.md section 6')
+  console.error('='.repeat(60) + '\n')
 
   // Don't exit with error in development - just warn
   // This allows development to continue while alerting to the issue
