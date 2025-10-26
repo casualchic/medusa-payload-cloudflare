@@ -147,6 +147,30 @@ serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild', '@opentel
 **Alternative Attempted (Failed):**
 Installing `@opentelemetry/api` as dependency causes new bundling errors with platform-specific code. Externalization is the only working solution.
 
+**Final Solution (PR #48):**
+Prevent pnpm from auto-installing the peer dependency:
+```json
+// package.json
+"pnpm": {
+  "peerDependencyRules": {
+    "ignoreMissing": ["@opentelemetry/api"]
+  }
+}
+```
+
+**Why This Was Needed:**
+- Even after removing @opentelemetry/api from devDependencies (PR #46)
+- And adding serverExternalPackages config (PR #46, #47)
+- pnpm was still auto-installing it as a peer dependency of next@16 and drizzle-orm
+- This caused the package to appear in `.open-next/middleware/node_modules/`
+- Leading to the same platform resolution errors during Wrangler bundling
+
+**Complete Solution Stack:**
+1. ✅ `serverExternalPackages: ['@opentelemetry/api']` - Runtime externalization
+2. ✅ `peerDependencyRules.ignoreMissing` - Prevent auto-installation
+3. ✅ NOT in devDependencies - Explicit removal
+Result: Package never installed → Never bundled → Deployment succeeds
+
 ### 7. **Turbopack Build Support (Drizzle ORM Compatibility)**
 
 **Issue**: Next.js Turbopack (experimental bundler) fails when parsing Drizzle ORM's libSQL driver dependencies.

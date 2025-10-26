@@ -39,4 +39,25 @@ describe('Critical Dependencies Configuration', () => {
 
     expect(hasExplanation).toBe(true)
   })
+
+  it('should not have @opentelemetry/api installed in node_modules', () => {
+    const lockfilePath = resolve(process.cwd(), 'pnpm-lock.yaml')
+    const lockfileContent = readFileSync(lockfilePath, 'utf-8')
+
+    // Verify @opentelemetry/api is not in the lockfile
+    // This ensures pnpm doesn't auto-install it as a peer dependency
+    expect(lockfileContent).not.toContain('@opentelemetry/api@')
+  })
+
+  it('should have peerDependencyRules.ignoreMissing for @opentelemetry/api', () => {
+    const packageJsonPath = resolve(process.cwd(), 'package.json')
+    const packageJsonContent = readFileSync(packageJsonPath, 'utf-8')
+    const packageJson = JSON.parse(packageJsonContent)
+
+    // Verify pnpm is configured to ignore the missing peer dependency
+    expect(packageJson.pnpm).toBeDefined()
+    expect(packageJson.pnpm.peerDependencyRules).toBeDefined()
+    expect(packageJson.pnpm.peerDependencyRules.ignoreMissing).toBeDefined()
+    expect(packageJson.pnpm.peerDependencyRules.ignoreMissing).toContain('@opentelemetry/api')
+  })
 })
