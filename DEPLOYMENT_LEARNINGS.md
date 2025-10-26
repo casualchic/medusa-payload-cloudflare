@@ -140,10 +140,11 @@ serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild', '@opentel
 4. No platform-specific code needs resolution → deployment succeeds
 
 **Bundler Compatibility:**
-- ✅ **Webpack**: This solution works with Webpack (currently used via `--webpack` flag)
+- ✅ **Webpack**: This solution works with Webpack (currently used via `--webpack` flag in all build scripts)
 - ✅ **Turbopack**: This solution also works with Turbopack once Drizzle compatibility is resolved
 - The `serverExternalPackages` configuration is bundler-agnostic and applies to both
-- See section 7 below for Turbopack/Drizzle compatibility details
+- **Why `--webpack` in build scripts?** See section 7 for detailed explanation of Turbopack/Drizzle incompatibility
+- **All build commands use Webpack** due to esbuild binary parsing issues (not OpenTelemetry-related)
 
 **⚠️ IMPORTANT**: Do NOT remove `@opentelemetry/api` from `serverExternalPackages`
 - Regression test in `tests/unit/dependencies.test.ts` prevents accidental removal
