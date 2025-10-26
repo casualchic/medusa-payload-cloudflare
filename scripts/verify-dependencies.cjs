@@ -1,9 +1,9 @@
-#!/usr/bin/env node
 /**
  * Development dependency verification script
  * Checks that @opentelemetry/api is not installed (breaks Cloudflare Workers deployment)
  *
  * This runs before dev server starts to catch configuration issues early.
+ * Always invoked via: node scripts/verify-dependencies.cjs (shebang not needed)
  * Related: PR #48 - Peer dependency exclusion for Cloudflare Workers compatibility
  */
 
@@ -25,5 +25,9 @@ if (fs.existsSync(apiPath)) {
   // Don't exit with error in development - just warn
   // This allows development to continue while alerting to the issue
 } else {
-  // Silent success - no need to spam console on every dev start
+  // Silent success - no spam on every dev start
+  // Set DEBUG=1 to see verification message: DEBUG=1 pnpm dev
+  if (process.env.DEBUG) {
+    console.log('✅ Dependencies verified: @opentelemetry/api not installed')
+  }
 }
