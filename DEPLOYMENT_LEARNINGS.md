@@ -186,7 +186,8 @@ pnpm install && test ! -d node_modules/@opentelemetry/api && echo "✅ Not insta
 **Test Coverage:**
 - Regression tests in `tests/unit/dependencies.test.ts` prevent accidental removal of configuration
 - Tests verify serverExternalPackages, peerDependencyRules, and package absence in lockfile
-- CI workflow validates successful build without the package (integration test)
+- CI workflow explicit check in `.github/workflows/deploy.yml` (fails fast if package installed)
+- Development predev hook in `scripts/verify-dependencies.cjs` warns developers before starting dev server
 
 **Future Monitoring:**
 If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) peer dependency:

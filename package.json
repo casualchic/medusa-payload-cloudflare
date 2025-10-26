@@ -13,6 +13,7 @@
     "casual-chic-commerce"
   ],
   "scripts": {
+    "predev": "node scripts/verify-dependencies.cjs",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "dev:local": "cross-env NODE_OPTIONS=--no-deprecation next dev -p 8000",
     "dev:cloud": "cp .env.production .env.local && cross-env NODE_OPTIONS=--no-deprecation next dev -p 8000",
