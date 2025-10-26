@@ -212,6 +212,11 @@ If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) pe
   - [Next.js OpenTelemetry issues](https://github.com/vercel/next.js/labels/area%3A%20OpenTelemetry)
   - [Drizzle ORM issues](https://github.com/drizzle-team/drizzle-orm/issues)
 
+**Future Enhancements (Optional):**
+- GitHub Actions workflow for monthly peer dependency status checks
+- Custom ESLint rule to prevent accidental addition to dependencies
+- Automated issue tracker monitoring with notifications
+
 **Troubleshooting: If Package Appears Again**
 
 > **Quick Reference:** See the Complete Solution Stack above for full context.
