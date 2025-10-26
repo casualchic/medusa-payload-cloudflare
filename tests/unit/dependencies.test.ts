@@ -61,7 +61,9 @@ describe('Critical Dependencies Configuration', () => {
     // Pattern choice: '@opentelemetry/api@' (simple and maintainable)
     // - More maintainable than matching specific version formats like [\d^~][\d.]+
     // - Covers all version specifiers: @1.9.0, @^1.0.0, @>=1.0.0, @latest, @beta.1, etc.
+    // - '@' separator ONLY appears in package entries, not dependency declarations
     // - False positives impossible: pnpm lockfiles have no comments, consistent YAML structure
+    // - Could add /^\s+'@opentelemetry\/api@/m but unnecessary - '@' separator is unique enough
     expect(lockfileContent).not.toMatch(/@opentelemetry\/api@/)
   })
 
@@ -83,6 +85,8 @@ describe('Critical Dependencies Configuration', () => {
     // Verify the package directory does not exist at runtime
     // This is the most direct check matching the verification command in DEPLOYMENT_LEARNINGS.md
     // Using existsSync is more explicit than expecting statSync to throw
+    // Note: Checks local node_modules only (not parent dirs in monorepo scenarios)
+    // This is correct for single-package architecture used in this project
     expect(existsSync(apiPath)).toBe(false)
   })
 })
