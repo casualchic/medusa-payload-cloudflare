@@ -106,8 +106,8 @@ export async function middleware(request: NextRequest) {
 ### 6. **Build Process & Dependencies**
 
 **Updated Versions:**
-- Next.js: `^15.5.6` (from 15.4.4)
-- Payload CMS: `^3.60.0` (from 3.59.1)
+- Next.js: `^16.0.0` (latest)
+- Payload CMS: `^3.61.1` (latest)
 
 **Workspace Configuration:**
 ```typescript
@@ -117,7 +117,136 @@ const nextConfig = {
 }
 ```
 
-### 7. **Static Generation Resilience**
+**Critical: OpenTelemetry API Externalization**
+
+**Issue**: Next.js 16 middleware includes OpenTelemetry tracing that requires `@opentelemetry/api`. This package has platform-specific code incompatible with Cloudflare Workers V8 runtime.
+
+**Error During Deployment:**
+```
+✘ [ERROR] Could not resolve "@opentelemetry/api"
+  .open-next/middleware/.next/server/lib/trace/tracer.js:46:18
+```
+
+**Solution**: Mark as external in `serverExternalPackages`:
+```typescript
+// next.config.ts
+serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild', '@opentelemetry/api']
+```
+
+**How It Works:**
+1. Next.js has try/catch: attempts `require('@opentelemetry/api')`, falls back to compiled version
+2. By marking as external, bundler skips the package
+3. At runtime, require fails (not bundled), Next.js uses its built-in fallback
+4. No platform-specific code needs resolution → deployment succeeds
+
+**⚠️ IMPORTANT**: Do NOT remove `@opentelemetry/api` from `serverExternalPackages`
+- Regression test in `tests/unit/dependencies.test.ts` prevents accidental removal
+- PR builds may pass but main branch deployment will fail without it
+- Related PRs: #36, #45, #46
+
+**Alternative Attempted (Failed):**
+Installing `@opentelemetry/api` as dependency causes new bundling errors with platform-specific code. Externalization is the only working solution.
+
+### 7. **Turbopack Build Support (Drizzle ORM Compatibility)**
+
+**Issue**: Next.js Turbopack (experimental bundler) fails when parsing Drizzle ORM's libSQL driver dependencies.
+
+**Error When Using `--turbopack`:**
+```
+Error: Turbopack build failed with 1 errors:
+./node_modules/libsql/hrana-client/LICENSE
+Parsing ecmascript source code failed
+> 1 | MIT License
+    | ^^^^^^^
+```
+
+**Root Cause:**
+- Turbopack's file tracing (NFT) step attempts to parse non-JavaScript files (LICENSE, binaries) as JavaScript modules
+- The libsql-js v0.5.x package uses dynamic `require()` that confuses Turbopack's static module resolution
+- Webpack does not have this issue because it handles file resolution differently
+
+**Solution: Force libsql v0.6.0+**
+```json
+// package.json
+{
+  "resolutions": {
+    "libsql": "^0.6.0"
+  },
+  "overrides": {
+    "libsql": "^0.6.0"
+  }
+}
+```
+
+**Why This Works:**
+- libsql v0.6.0-pre.18+ contains fixes for the dynamic import issues
+- The v0.6.0 stable release eliminates problematic dynamic imports that confused Turbopack
+- This allows using `next build --turbopack` for faster builds
+
+**Alternative Workarounds (Not Recommended):**
+1. ❌ Remove LICENSE file before build: `rm -f ./node_modules/libsql/hrana-client/LICENSE && next build --turbopack`
+2. ❌ Use isolated linker: `bun install --linker isolated`
+3. ✅ **Recommended**: Use libsql v0.6.0+ override + pnpm (current setup)
+
+**Status:**
+- ✅ libsql v0.6.0+ override added to package.json (fixes libSQL/Turbopack parsing issue)
+- ✅ Using pnpm package manager (recommended for this issue)
+- ❌ **Turbopack currently incompatible with Payload CMS + Drizzle stack**
+
+**Additional Turbopack Limitation Discovered:**
+
+After resolving the libsql issue, Turbopack encounters another blocker with Payload CMS's Drizzle adapter:
+
+```
+Error: Turbopack build failed with 2 errors:
+./node_modules/@esbuild/darwin-arm64/README.md - Unknown module type
+./node_modules/@esbuild/darwin-arm64/bin/esbuild - Reading source code for parsing failed
+```
+
+**Root Cause:**
+- Payload CMS's D1/SQLite adapter requires `drizzle-kit` at build time
+- `drizzle-kit` has a dependency chain: `drizzle-kit → esbuild-register → esbuild`
+- Turbopack attempts to parse binary files (`.node` executables) and non-JS files (READMEs) as JavaScript
+- `serverExternalPackages` only affects runtime, not Turbopack's build-time file tracing
+
+**Current Recommendation:**
+- ✅ **Use Webpack for all builds** - Added `--webpack` flag to build scripts
+- ⚠️ **Next.js 16 made Turbopack the default bundler** - Must explicitly opt-in to Webpack
+- ⏳ **Wait for Turbopack maturity** - This is a known limitation tracked in Next.js issues
+
+**Updated Build Scripts (package.json):**
+```json
+{
+  "scripts": {
+    "build": "next build --webpack",
+    "build:local": "next build --webpack",
+    "build:cloud": "next build --webpack"
+  }
+}
+```
+
+**Why --webpack Flag is Required:**
+- Next.js 16.0.0 made Turbopack the default bundler for both dev and production
+- Without `--webpack` flag, builds will fail with Drizzle/esbuild binary parsing errors
+- The flag explicitly opts out of Turbopack and uses the stable Webpack bundler
+- This is the officially recommended approach for projects with custom webpack configs or incompatible dependencies
+
+**When Turbopack Will Work:**
+- When Turbopack adds better support for binary dependencies
+- When Payload CMS/Drizzle move away from build-time `drizzle-kit` requirement
+- Estimated: Next.js 17+ (Turbopack will become stable default)
+
+**Related GitHub Issues:**
+- Vercel Next.js: #82881
+- libsql-js: Merged fixes for v0.6.0 stable release
+
+**Benefits of Turbopack:**
+- Faster incremental builds
+- Better tree-shaking
+- Improved development experience
+- Future-proof for Next.js (will become default)
+
+### 8. **Static Generation Resilience**
 
 **Issue**: Build failures when Medusa backend unavailable during static generation
 
@@ -134,7 +263,7 @@ export async function generateStaticParams() {
 }
 ```
 
-### 8. **Fallback Data for Offline Resilience**
+### 9. **Fallback Data for Offline Resilience**
 
 **Added fallback data in data fetching functions:**
 ```typescript
@@ -209,6 +338,38 @@ CLOUDFLARE_ENV=production pnpm run deploy:app
 - Workflow: `.github/workflows/deploy.yml`
 - Triggers: Push to main branch
 - Secrets required: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
+
+## 🏗️ **Architectural Decisions & Trade-offs**
+
+### Webpack vs Turbopack/Vite Consolidation
+
+**Context:**
+- Medusa Backend (Cloud): Uses Vite ⚡
+- Vitest (Testing): Uses Vite ⚡
+- Next.js Frontend: Uses Webpack ⚙️ (forced by Payload + Drizzle)
+
+**Why We Can't Consolidate to Vite/Turbopack:**
+1. Payload CMS 3.x uses Drizzle ORM for all SQL adapters (PostgreSQL, SQLite, D1)
+2. Drizzle requires `drizzle-kit` at build time → requires `esbuild-register` → has binary files
+3. Turbopack/Vite cannot parse esbuild's binary files
+4. Only the MongoDB adapter avoids Drizzle (but loses D1 integration)
+
+**Decision:** Continue using Webpack until:
+- Vercel offers capabilities Cloudflare cannot match, OR
+- Payload CMS needs features not available in D1 adapter, OR
+- D1 SQLite vs Medusa PostgreSQL interface complexity causes operational issues
+
+**Current Database Architecture:**
+- **Medusa Backend:** PostgreSQL (Medusa Cloud)
+- **Payload CMS:** D1 SQLite (Cloudflare)
+- **Trade-off:** Different SQL dialects, but acceptable for current needs
+
+**Future Migration Paths (If Needed):**
+1. **All-Cloudflare:** Migrate Medusa to Workers + D1 (unified SQLite stack)
+2. **All-Vercel:** Migrate storefront to Vercel + Vercel Postgres (unified PostgreSQL, enables Turbopack)
+3. **Payload MongoDB:** Switch to MongoDB adapter (enables Turbopack, loses D1)
+
+**Status:** Webpack solution is acceptable and stable. Migration only justified by business/technical requirements, not developer convenience.
 
 ## 🎯 **Next Steps**
 

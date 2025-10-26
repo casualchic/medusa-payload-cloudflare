@@ -17,9 +17,9 @@
     "dev:local": "cross-env NODE_OPTIONS=--no-deprecation next dev -p 8000",
     "dev:cloud": "cp .env.production .env.local && cross-env NODE_OPTIONS=--no-deprecation next dev -p 8000",
     "devsafe": "rm -rf .next && rm -rf .open-next && cross-env NODE_OPTIONS=--no-deprecation next dev",
-    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
-    "build:local": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
-    "build:cloud": "cp .env.production .env.local && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack",
+    "build:local": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack",
+    "build:cloud": "cp .env.production .env.local && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start -p 8000",
     "deploy": "pnpm run deploy:database && pnpm run deploy:app",
     "deploy:app": "opennextjs-cloudflare build --env=$CLOUDFLARE_ENV && opennextjs-cloudflare deploy --env=$CLOUDFLARE_ENV",
@@ -73,7 +73,6 @@
     "@medusajs/types": "^2.11.1",
     "@medusajs/ui-preset": "^2.11.1",
     "@next/eslint-plugin-next": "^16.0.0",
-    "@opentelemetry/api": "^1.9.0",
     "@playwright/test": "1.56.1",
     "@tailwindcss/postcss": "^4.1.16",
     "@testing-library/react": "^16.3.0",
@@ -108,7 +107,8 @@
     "monaco-editor": "^0.53.0",
     "esbuild": "0.25.11",
     "@types/node": "^24.9.1",
-    "pino": "^10.0.0"
+    "pino": "^10.0.0",
+    "libsql": "^0.6.0"
   },
   "overrides": {
     "yjs": "^13.6.0",
@@ -116,7 +116,8 @@
     "monaco-editor": "^0.53.0",
     "esbuild": "0.25.11",
     "@types/node": "^24.9.1",
-    "pino": "^10.0.0"
+    "pino": "^10.0.0",
+    "libsql": "^0.6.0"
   },
   "engines": {
     "node": ">=20.19.0",

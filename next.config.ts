@@ -79,10 +79,12 @@ const nextConfig = {
     ignoreBuildErrors: process.env.NODE_ENV === 'development',
   },
   // Turbopack configuration for Payload CMS compatibility
+  // Note: Turbopack respects serverExternalPackages for build-time exclusions
   turbopack: {},
   // Exclude packages that contain binaries or need special handling
   // Note: Platform-specific @esbuild packages are auto-externalized, only need base packages
-  serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild'],
+  // @opentelemetry/api: Has platform-specific code incompatible with Workers runtime
+  serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild', '@opentelemetry/api'],
   images: {
     remotePatterns: [
       {
