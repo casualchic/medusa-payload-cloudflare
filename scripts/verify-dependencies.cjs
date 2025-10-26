@@ -62,3 +62,6 @@ if (fs.existsSync(apiPath)) {
     console.log('✅ Dependencies verified: @opentelemetry/api not installed')
   }
 }
+
+// Explicit success exit code (helpful for script chaining and clarity)
+process.exit(0)

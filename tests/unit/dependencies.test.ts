@@ -66,6 +66,7 @@ describe('Critical Dependencies Configuration', () => {
     // - '@' separator ONLY appears in package entries, not dependency declarations
     // - False positives impossible: pnpm lockfiles have no comments, consistent YAML structure
     // - Could add /^\s+'@opentelemetry\/api@/m but unnecessary - '@' separator is unique enough
+    // - Tested with pnpm 9.x lockfile format; may need adjustment if format changes in v10+
     expect(lockfileContent).not.toMatch(/@opentelemetry\/api@/)
   })
 
