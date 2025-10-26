@@ -183,6 +183,8 @@ jobs:
         NODE_ENV: production
         NEXT_PHASE: phase-production-build
         PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ vars.MEDUSA_BACKEND_URL }}
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${{ vars.MEDUSA_PUBLISHABLE_KEY }}
         NEXT_TELEMETRY_DISABLED: '1'
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
