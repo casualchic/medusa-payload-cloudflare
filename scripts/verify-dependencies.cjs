@@ -47,8 +47,12 @@ if (fs.existsSync(apiPath)) {
   console.error('See: DEPLOYMENT_LEARNINGS.md section 6')
   console.error('='.repeat(60) + '\n')
 
-  // Don't exit with error in development - just warn
-  // This allows development to continue while alerting to the issue
+  // Exit with error in CI environments, warn in development
+  // CI=true is set by most CI providers (GitHub Actions, GitLab CI, Travis, etc.)
+  if (process.env.CI) {
+    process.exit(1)
+  }
+  // In development: allow continuation while alerting to the issue
 } else {
   // Silent success - no spam on every dev start
   // Set DEBUG=1 to see verification message: DEBUG=1 pnpm dev
