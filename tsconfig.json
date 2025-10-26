@@ -55,6 +55,14 @@
     ".next",
     ".nyc_output",
     "coverage",
-    "jest-coverage"
+    "jest-coverage",
+    "playwright.config.ts",
+    "vitest.config.mts",
+    "vitest.unit.config.mts",
+    "vitest.workflows.config.mts",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
   ]
 }
