@@ -76,6 +76,24 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
+    # Verify OpenTelemetry API package is not installed
+    # This ensures peerDependencyRules.ignoreMissing is working correctly
+    # Related: PR #48 - Peer dependency exclusion for Cloudflare Workers compatibility
+    - name: Verify OpenTelemetry exclusion
+      run: |
+        # Check both directory and symlink (handles edge cases)
+        if [ -d "node_modules/@opentelemetry/api" ] || [ -L "node_modules/@opentelemetry/api" ]; then
+          echo "❌ Error: @opentelemetry/api should not be installed"
+          echo "This package causes platform resolution errors in Cloudflare Workers"
+          echo "Check peerDependencyRules.ignoreMissing in package.json"
+          echo ""
+          echo "This check verifies the package was not installed by pnpm."
+          echo "If this fails, peerDependencyRules configuration may be incorrect."
+          echo "See: DEPLOYMENT_LEARNINGS.md section 6"
+          exit 1
+        fi
+        echo "✅ Verified: @opentelemetry/api is not installed"
+
     # Cache Vitest test results for faster test runs
     # Vitest uses Vite cacheDir (default: node_modules/.vite)
     # Includes source files in cache key to invalidate when source code changes

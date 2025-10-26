@@ -135,9 +135,16 @@ serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild', '@opentel
 
 **How It Works:**
 1. Next.js has try/catch: attempts `require('@opentelemetry/api')`, falls back to compiled version
-2. By marking as external, bundler skips the package
+2. By marking as external, bundler (Webpack or Turbopack) skips the package
 3. At runtime, require fails (not bundled), Next.js uses its built-in fallback
 4. No platform-specific code needs resolution → deployment succeeds
+
+**Bundler Compatibility:**
+- ✅ **Webpack**: This solution works with Webpack (currently used via `--webpack` flag in all build scripts)
+- ✅ **Turbopack**: This solution also works with Turbopack once Drizzle compatibility is resolved
+- The `serverExternalPackages` configuration is bundler-agnostic and applies to both
+- **Why `--webpack` in build scripts?** See section 7 for detailed explanation of Turbopack/Drizzle incompatibility
+- **All build commands use Webpack** due to esbuild binary parsing issues (not OpenTelemetry-related)
 
 **⚠️ IMPORTANT**: Do NOT remove `@opentelemetry/api` from `serverExternalPackages`
 - Regression test in `tests/unit/dependencies.test.ts` prevents accidental removal
@@ -146,6 +153,136 @@ serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild', '@opentel
 
 **Alternative Attempted (Failed):**
 Installing `@opentelemetry/api` as dependency causes new bundling errors with platform-specific code. Externalization is the only working solution.
+
+**Final Solution (PR #48):**
+Prevent pnpm from auto-installing the peer dependency:
+```json
+// package.json
+"pnpm": {
+  "peerDependencyRules": {
+    "ignoreMissing": ["@opentelemetry/api"]
+  }
+}
+```
+
+**Why This Was Needed:**
+- Even after removing @opentelemetry/api from devDependencies (PR #46)
+- And adding serverExternalPackages config (PR #46, #47)
+- pnpm was still auto-installing it as a peer dependency of next@16 and drizzle-orm
+- This caused the package to appear in `.open-next/middleware/node_modules/`
+- Leading to the same platform resolution errors during Wrangler bundling
+
+**Complete Solution Stack:**
+1. ✅ `serverExternalPackages: ['@opentelemetry/api']` - Runtime externalization
+2. ✅ `peerDependencyRules.ignoreMissing` - Prevent auto-installation
+3. ✅ NOT in devDependencies - Explicit removal
+Result: Package never installed → Never bundled → Deployment succeeds
+
+**Verification:**
+```bash
+# Verify the package is not installed
+pnpm install && test ! -d node_modules/@opentelemetry/api && echo "✅ Not installed"
+
+# Quick health check - run periodically after dependency updates
+pnpm why @opentelemetry/api 2>&1 | grep -q "not found" && echo "✅ Correctly excluded" || echo "⚠️  Package detected"
+
+# Manual verification of detection logic (optional, for testing the checks work)
+# WARNING: This temporarily installs the problematic package
+pnpm add -D @opentelemetry/api  # Should trigger warnings in predev hook and fail CI
+pnpm remove @opentelemetry/api && rm -rf node_modules pnpm-lock.yaml && pnpm install
+```
+
+**Test Coverage:**
+- Regression tests in `tests/unit/dependencies.test.ts` prevent accidental removal of configuration
+- Tests verify serverExternalPackages, peerDependencyRules, and package absence in lockfile
+- CI workflow explicit check in `.github/workflows/deploy.yml` (fails fast if package installed)
+- Development predev hook in `scripts/verify-dependencies.cjs` warns developers before starting dev server
+  - Verifies pnpm is being used (npm/yarn handle peer dependencies differently)
+  - Detects wrong package manager by checking for npm/yarn lockfiles
+  - Exits with error in CI environments (CI=true)
+  - Optional strict mode: `STRICT_DEPS=true pnpm dev` to enforce locally (useful for pre-commit hooks)
+
+**Future Monitoring:**
+If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) peer dependency:
+- Unit tests will continue passing (package correctly excluded)
+- Build may fail if package becomes truly required
+
+**Action Required if Build Fails After Dependency Updates:**
+1. Check if `@opentelemetry/api` is now required (not optional) via peer dependency warnings
+2. Investigate Cloudflare Workers OpenTelemetry compatibility and support status
+3. Consider using a polyfill or shim for Node.js platform-specific APIs
+4. Evaluate alternative observability solutions compatible with Workers runtime
+5. If no workaround exists, consider migrating to different deployment platform
+
+**Known Compatible Versions (Requiring This Workaround):**
+- Next.js 16.0.0+: `@opentelemetry/api` is optional peer dependency (may auto-install with npm/yarn)
+- Drizzle ORM 0.44.6+: `@opentelemetry/api` is optional peer dependency (may auto-install with npm/yarn)
+- Cloudflare Workers: Does not support Node.js platform-specific code in `@opentelemetry/api`
+- Last verified: 2025-10-26 (PR #48)
+- **This workaround is required as long as:**
+  1. Dependencies declare `@opentelemetry/api` as peer dependency, AND
+  2. Cloudflare Workers doesn't support OpenTelemetry's platform-specific code
+
+**Review Schedule:**
+- Review this configuration when upgrading Next.js major versions
+- Review when upgrading Drizzle ORM to new major versions
+- Monitor relevant issue trackers:
+  - [Next.js OpenTelemetry issues](https://github.com/vercel/next.js/labels/area%3A%20OpenTelemetry)
+  - [Drizzle ORM issues](https://github.com/drizzle-team/drizzle-orm/issues)
+
+**Future Enhancements (Priority Order):**
+1. **High Priority**: GitHub Actions workflow for monthly peer dependency status checks
+   - Easy to implement, high value
+   - Automatically detects if peer dependency status changes
+2. **Medium Priority**: Custom ESLint rule to prevent accidental addition to dependencies
+   - Good developer experience, requires initial setup
+   - Catches issues at development time
+3. **Low Priority**: Automated issue tracker monitoring with notifications
+   - Complex to implement, may have false positives
+   - Manual monitoring via links above is sufficient
+
+**Troubleshooting: If Package Appears Again**
+
+> **Quick Reference:** See the Complete Solution Stack above for full context.
+
+If `@opentelemetry/api` appears in `node_modules` after dependency updates:
+
+1. **Check Configuration:**
+   ```bash
+   # Verify peerDependencyRules in package.json
+   cat package.json | grep -A 5 "peerDependencyRules"
+   ```
+   Should show: `"ignoreMissing": ["@opentelemetry/api"]`
+
+   Note: JSON doesn't support inline comments. Configuration is documented here instead of in package.json.
+
+2. **Clean Install:**
+   ```bash
+   rm -rf node_modules pnpm-lock.yaml
+   pnpm install
+   ```
+
+3. **Verify Exclusion:**
+   ```bash
+   test ! -d node_modules/@opentelemetry/api && echo "✅ Not installed" || echo "❌ Still installed"
+   ```
+
+4. **Common Causes:**
+   - New dependency added that requires `@opentelemetry/api` as non-optional peer dependency
+   - pnpm configuration reset or modified
+   - Different package manager used (npm/yarn handle peer dependencies differently)
+   - Manual installation via `pnpm add` without checking
+
+5. **If Package Still Appears:**
+   - Check `pnpm-lock.yaml` for entries: `grep "@opentelemetry/api" pnpm-lock.yaml`
+   - Investigate which package requires it: `pnpm why @opentelemetry/api`
+   - May need to add to `peerDependencyRules.ignoreMissing` for the new requiring package
+   - Or investigate if the new dependency is truly incompatible with Cloudflare Workers
+
+6. **Prevention:**
+   - CI check in `.github/workflows/deploy.yml` will catch this before deployment
+   - Unit tests in `tests/unit/dependencies.test.ts` will fail
+   - Dev predev hook will warn when running `pnpm dev`
 
 ### 7. **Turbopack Build Support (Drizzle ORM Compatibility)**
 
