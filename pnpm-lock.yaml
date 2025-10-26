@@ -62,6 +62,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.1.16
         version: 4.1.16
+      '@types/node':
+        specifier: ^24.9.1
+        version: 24.9.1
       '@types/react':
         specifier: ^19.2.2
         version: 19.2.2
@@ -129,9 +132,6 @@ importers:
       '@types/lodash':
         specifier: ^4.17.20
         version: 4.17.20
-      '@types/node':
-        specifier: ^24.9.1
-        version: 24.9.1
       '@types/react-instantsearch-dom':
         specifier: ^6.12.9
         version: 6.12.9
