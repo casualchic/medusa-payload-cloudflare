@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'fs'
+import { readFileSync, statSync } from 'fs'
 import { resolve } from 'path'
 
 describe('Critical Dependencies Configuration', () => {
@@ -60,5 +60,13 @@ describe('Critical Dependencies Configuration', () => {
     expect(packageJson.pnpm.peerDependencyRules).toBeDefined()
     expect(packageJson.pnpm.peerDependencyRules.ignoreMissing).toBeDefined()
     expect(packageJson.pnpm.peerDependencyRules.ignoreMissing).toContain('@opentelemetry/api')
+  })
+
+  it('should not have @opentelemetry/api directory in node_modules', () => {
+    const apiPath = resolve(process.cwd(), 'node_modules/@opentelemetry/api')
+
+    // Verify the package directory does not exist at runtime
+    // This is the most direct check matching the verification command in DEPLOYMENT_LEARNINGS.md
+    expect(() => statSync(apiPath)).toThrow()
   })
 })
