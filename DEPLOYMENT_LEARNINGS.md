@@ -214,6 +214,8 @@ If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) pe
 
 **Troubleshooting: If Package Appears Again**
 
+> **Quick Reference:** See the Complete Solution Stack above for full context.
+
 If `@opentelemetry/api` appears in `node_modules` after dependency updates:
 
 1. **Check Configuration:**

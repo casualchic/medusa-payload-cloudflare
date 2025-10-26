@@ -85,6 +85,10 @@ jobs:
           echo "❌ Error: @opentelemetry/api should not be installed"
           echo "This package causes platform resolution errors in Cloudflare Workers"
           echo "Check peerDependencyRules.ignoreMissing in package.json"
+          echo ""
+          echo "This check verifies the package was not installed by pnpm."
+          echo "If this fails, peerDependencyRules configuration may be incorrect."
+          echo "See: DEPLOYMENT_LEARNINGS.md section 6"
           exit 1
         fi
         echo "✅ Verified: @opentelemetry/api is not installed"
