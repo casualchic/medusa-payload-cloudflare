@@ -18,7 +18,7 @@ import { NextResponse } from 'next/server'
  * @param request - The incoming Next.js request
  * @returns NextResponse - Currently a passthrough, returns the request unchanged
  */
-export function middleware(request: NextRequest) {
+export function middleware(_request: NextRequest) {
   // Currently passthrough - add middleware logic here as needed
   // When implementing auth, consider using Edge Runtime for fastest cold starts
   return NextResponse.next()

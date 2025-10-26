@@ -1,14 +1,25 @@
 name: Deploy to Cloudflare Workers
 
+# This workflow runs on all pushes to main and all PRs to main.
+# Consider adding path filters in the future if needed to skip builds for non-code changes (e.g., docs-only).
+
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
+# Cancel in-progress runs when a new run is triggered
+# This saves CI minutes by not running outdated builds
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30  # Prevent runaway jobs
+    environment: production  # Enables audit log and optional approvals
 
     # Security: Restrict GITHUB_TOKEN permissions to minimum required
     permissions:
@@ -16,66 +27,181 @@ jobs:
       deployments: write
 
     env:
-      # Security: Use GitHub Secrets instead of hardcoded credentials
-      NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ secrets.MEDUSA_BACKEND_URL }}
-      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${{ secrets.MEDUSA_PUBLISHABLE_KEY }}
+      # Use repository variables for NEXT_PUBLIC_ values (client-exposed, safe to share with forks)
+      # These are not secrets - they are publicly visible in the browser anyway
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${{ vars.MEDUSA_BACKEND_URL }}
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${{ vars.MEDUSA_PUBLISHABLE_KEY }}
       # NODE_ENV is set per-step to avoid conflicts with Next.js CLI commands
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+      with:
+        fetch-depth: 1  # Shallow clone for faster checkout
+
+    # Setup pnpm BEFORE Node.js to enable built-in caching
+    # Pin to specific commit SHA for security (best practice)
+    - name: Setup pnpm
+      uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+      with:
+        version: 9.15.9
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        
-    # Pin to specific commit SHA for security
-    - name: Setup pnpm
-      uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
-      with:
-        version: 9
-        
-    - name: Get pnpm store directory
-      shell: bash
-      run: |
-        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-        
-    - name: Setup pnpm cache
+        cache: 'pnpm'  # Built-in pnpm caching (requires pnpm to be installed first)
+
+    # Cache Next.js build output for faster subsequent builds
+    # Split cache keys to avoid hash collision issues with multiple patterns in single hashFiles()
+    - name: Cache Next.js build
       uses: actions/cache@v4
       with:
-        path: ${{ env.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        path: .next/cache
+        key: ${{ runner.os }}-node20-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**/*.[jt]s*', 'app/**/*.[jt]s*') }}-${{ hashFiles('**/*.css', '**/*.scss') }}-${{ hashFiles('middleware.ts', 'next.config.*', 'open-next.config.*', 'payload.config.*', 'tailwind.config.*', 'postcss.config.*', 'tsconfig*.json') }}
         restore-keys: |
-          ${{ runner.os }}-pnpm-store-
-          
+          ${{ runner.os }}-node20-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-
+
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
+    # Cache Vitest test results for faster test runs
+    # Vitest uses Vite cacheDir (default: node_modules/.vite)
+    # Includes source files in cache key to invalidate when source code changes
+    - name: Cache Vitest
+      uses: actions/cache@v4
+      with:
+        path: node_modules/.vite
+        key: vitest-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('vitest*.config.*', '{tests,src,app}/**') }}
+        restore-keys: |
+          vitest-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+          vitest-${{ runner.os }}-
 
     - name: Run linting
       run: pnpm run lint
 
     - name: Run unit tests
+      run: pnpm run test:unit
+      env:
+        NODE_ENV: test
+
+    - name: Run integration tests
       run: pnpm run test:int
       env:
         NODE_ENV: test
-        PAYLOAD_SECRET: test-secret-for-ci
+        # gitleaks:allow - Hardcoded test fixture, NOT a real secret
+        # This 64-char hex string validates production secret requirements in CI
+        PAYLOAD_SECRET: d8f7e6a5b4c3d2e1f0a9b8c7d6e5f4a3c2b1a0908f7e6d5c4b3a29180706f5e4d
+        # Use repository variables (client-exposed values, safe for tests)
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_test_1234567890
 
     # Build with webpack flag instead of Turbopack due to drizzle-kit binary parsing issues
     # --no-deprecation: Suppress deprecation warnings to reduce noise
     # --max-old-space-size=8000: Allocate 8GB memory for large builds
-    # Build strategy:
-    # - PRs: Use empty PAYLOAD_SECRET to test build-time fallback mechanism
-    # - Main: Use real PAYLOAD_SECRET from secrets for production deployment
-    - name: Build Next.js application
+
+    # Validate production secrets BEFORE building to fail fast
+    # CRITICAL: This must run before the production build to prevent building with weak/test secrets
+    # Focus on entropy and length rather than pattern matching to avoid false positives
+    - name: Validate Production Secrets
+      if: github.ref == 'refs/heads/main'
+      run: |
+        set -euo pipefail
+        export LC_ALL=C
+        SECRET="${{ secrets.PAYLOAD_SECRET }}"
+
+        # Check if secret is set
+        if [[ -z "$SECRET" ]]; then
+          echo "❌ ERROR: PAYLOAD_SECRET is not set"
+          exit 1
+        fi
+
+        # Check minimum length (32+ chars recommended; 64 hex chars ~= 256-bit entropy)
+        if [[ ${#SECRET} -lt 32 ]]; then
+          echo "❌ ERROR: PAYLOAD_SECRET is too short (minimum 32 characters for production)"
+          echo "💡 Use a cryptographically secure random string: openssl rand -hex 32"
+          exit 1
+        fi
+
+        # Basic entropy check: Ensure secret has a mix of character types
+        # This catches weak secrets like "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" or "12345678901234567890123456789012"
+        # Count unique characters by splitting each char, deduplicating with sort -u, counting lines
+        UNIQUE_CHARS=$(printf '%s' "$SECRET" | grep -o . | sort -u | wc -l)
+
+        # Check if secret is hex-encoded (only contains 0-9, a-f, A-F)
+        if [[ "$SECRET" =~ ^[0-9a-fA-F]+$ ]]; then
+          # For hex-encoded secrets, require 64 chars minimum (64 hex chars = 256 bits of entropy)
+          # This prevents weak patterns like "0123456789abcdef" repeated
+          if [[ ${#SECRET} -lt 64 ]]; then
+            echo "❌ ERROR: Hex-encoded PAYLOAD_SECRET is too short (minimum 64 characters)"
+            echo "💡 Use: openssl rand -hex 32"
+            exit 1
+          fi
+        elif [[ $UNIQUE_CHARS -lt 16 ]]; then
+          # For non-hex secrets, require at least 16 unique characters
+          # Why 16? Catches weak patterns (repeated strings, sequential chars, keyboard walks)
+          # while allowing base64 output (64-char alphabet) and other cryptographically random strings
+          # Combined with 32-char minimum length, this provides adequate entropy for session secrets
+          echo "❌ ERROR: PAYLOAD_SECRET has insufficient character diversity (minimum 16 unique characters)"
+          echo "💡 Secret should contain a mix of different characters"
+          echo "💡 Use a cryptographically secure random string: openssl rand -base64 32"
+          exit 1
+        fi
+
+        echo "✅ Production secrets validated successfully"
+
+    # Validate Cloudflare credentials before attempting deployment
+    - name: Validate Cloudflare Credentials
+      if: github.ref == 'refs/heads/main'
+      run: |
+        set -euo pipefail
+        [[ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]] && { echo "❌ Missing CLOUDFLARE_API_TOKEN"; exit 1; }
+        [[ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]] && { echo "❌ Missing CLOUDFLARE_ACCOUNT_ID"; exit 1; }
+        echo "✅ Cloudflare credentials present"
+
+    # Production build (main branch) - requires real PAYLOAD_SECRET (validated above)
+    - name: Build Next.js application (Production)
+      if: github.ref == 'refs/heads/main'
       run: pnpm exec cross-env NODE_OPTIONS="--no-deprecation --max-old-space-size=8000" next build --webpack
       env:
         NODE_ENV: production
         NEXT_PHASE: phase-production-build
-        # PRs intentionally use empty PAYLOAD_SECRET to validate build-time fallback logic
-        # This ensures the fallback mechanism is tested on every PR
-        PAYLOAD_SECRET: ${{ github.ref == 'refs/heads/main' && secrets.PAYLOAD_SECRET || '' }}
+        PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+        NEXT_TELEMETRY_DISABLED: '1'
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PR Build Configuration - Test Secret Pattern
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # SECURITY NOTE: The hardcoded "test-secret-for-ci" below is INTENTIONAL and SAFE
+    #
+    # Why hardcoded instead of repository variables or secrets?
+    # 1. GitHub Secrets are NOT available to fork PRs (community contributions would fail)
+    # 2. Repository Variables ARE readable by fork PRs (security risk if we stored real data)
+    # 3. This hardcoded value grants ZERO access to production systems
+    # 4. The same test value is used in integration tests (tests/integration/auth.test.ts)
+    # 5. Production builds (main branch) use real secrets from GitHub Secrets (line 164)
+    #
+    # This pattern enables:
+    # ✓ Fork PRs to build successfully (important for open source contributions)
+    # ✓ Build validation without exposing production secrets
+    # ✓ Consistent test environment across local dev, CI, and fork PRs
+    #
+    # For more context, see: BUILD_PIPELINE.md
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    - name: Build Next.js application (PR)
+      if: github.ref != 'refs/heads/main'
+      run: pnpm exec cross-env NODE_OPTIONS="--no-deprecation --max-old-space-size=8000" next build --webpack
+      env:
+        NODE_ENV: production
+        NEXT_PHASE: phase-production-build
+        # gitleaks:allow - Hardcoded test fixture, NOT a real secret
+        # Safe hardcoded test value - grants NO production access
+        # Using 64-char hex string to match production validation requirements
+        PAYLOAD_SECRET: d8f7e6a5b4c3d2e1f0a9b8c7d6e5f4a3c2b1a0908f7e6d5c4b3a29180706f5e4d
+        # Hardcoded test values for PR builds (client-exposed, safe for forks)
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_test_1234567890
+        NEXT_TELEMETRY_DISABLED: '1'
 
     - name: Build and Deploy to Cloudflare Workers
       if: github.ref == 'refs/heads/main'

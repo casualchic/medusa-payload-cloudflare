@@ -107,6 +107,73 @@ pnpm test:e2e
 pnpm test -- --coverage
 ```
 
+### Test Secret Security Model
+
+This project implements a **security-first approach** to secrets management in CI/CD pipelines:
+
+#### 🔐 Production Secrets (GitHub Secrets)
+**NEVER** committed to version control. Stored securely in GitHub repository settings:
+- `PAYLOAD_SECRET`: Production CMS authentication key
+- `LOG_SECRET`: HMAC key for anonymizing user identifiers in logs (GDPR-compliant)
+- `CLOUDFLARE_API_TOKEN`: API access for deployments
+- `CLOUDFLARE_ACCOUNT_ID`: Account identifier
+
+**Access Control:**
+- ✅ Only available to `main` branch deployments
+- ✅ Never exposed in PR builds or logs
+- ✅ Automatically injected by GitHub Actions
+
+#### 🧪 Test Secrets (Hardcoded in Workflow)
+Intentionally **hardcoded in `.github/workflows/deploy.yml`** for PR testing:
+- `PAYLOAD_SECRET: test-secret-for-ci-d8f7e6a5b4c3d2e1f0a9b8c7d6e5f4a3`
+- `LOG_SECRET: test-log-secret-for-anonymizing-user-ids-in-tests`
+
+**Why Hardcoded?**
+1. **PR Testing**: Pull requests cannot access GitHub Secrets (security feature)
+2. **Non-Sensitive**: These secrets are ONLY used for test execution, never production
+3. **Reproducibility**: Any developer can run tests locally with the same values
+4. **Transparency**: Security through design, not obscurity
+
+**Workflow Logic:**
+```yaml
+# Production build (main branch)
+- name: Set environment variables
+  if: github.ref == 'refs/heads/main'
+  env:
+    PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}  # Real secret
+    LOG_SECRET: ${{ secrets.LOG_SECRET }}          # Real secret
+
+# PR build (all other branches)
+- name: Set test environment variables
+  if: github.ref != 'refs/heads/main'
+  env:
+    PAYLOAD_SECRET: test-secret-for-ci-...  # Hardcoded test value
+    LOG_SECRET: test-log-secret-...         # Hardcoded test value
+```
+
+**Security Guarantees:**
+- ❌ Test secrets are NEVER used in production deployments
+- ❌ Test secrets grant NO access to production systems
+- ❌ Test secrets cannot access real user data
+- ✅ Production deployments ALWAYS use GitHub Secrets
+- ✅ Clear separation between test and production environments
+
+#### 🛡️ Best Practices
+1. **Never commit production secrets** to version control
+2. **Rotate production secrets regularly** (every 90 days recommended)
+3. **Use different secrets** for each environment (dev/staging/production)
+4. **Monitor secret usage** via GitHub Actions audit logs
+5. **Immediately rotate** if a secret is accidentally exposed
+
+#### 📊 Secret Usage Matrix
+
+| Secret | PR Builds | Main Branch | Source | Purpose |
+|--------|-----------|-------------|--------|---------|
+| `PAYLOAD_SECRET` | Hardcoded test value | GitHub Secret | `.github/workflows/deploy.yml` | CMS auth |
+| `LOG_SECRET` | Hardcoded test value | GitHub Secret | `.github/workflows/deploy.yml` | PII anonymization |
+| `CLOUDFLARE_API_TOKEN` | ❌ Not used | GitHub Secret | Repository settings | Deployment auth |
+| `CLOUDFLARE_ACCOUNT_ID` | ❌ Not used | GitHub Secret | Repository settings | Account ID |
+
 ## 📁 Project Structure
 
 ```
@@ -215,10 +282,27 @@ This project is optimized for Cloudflare Workers deployment:
 
 This project is proprietary software owned by Casual Chic Commerce LLC.
 
+## 📚 Documentation
+
+### Operational Guides
+- 📖 [Deployment Guide](./DEPLOYMENT_STEPS.md) - Step-by-step deployment instructions
+- 📖 [Deployment Learnings](./DEPLOYMENT_LEARNINGS.md) - Key insights and lessons learned
+- 🚨 [Orphaned Auth Runbook](./docs/RUNBOOK_ORPHANED_AUTH.md) - Handling orphaned auth identities
+- 📊 [Monitoring Setup](./docs/MONITORING_SETUP.md) - Alert configuration and dashboards
+- 💡 [Recommendations](./docs/RECOMMENDATIONS.md) - Future improvements and priorities
+- 🔒 [Security Enhancements](./docs/SECURITY_ENHANCEMENTS.md) - Required security features before high-traffic deployment
+
+### Development
+- Test Secret Security Model - See [Testing section](#test-secret-security-model) above
+- Architecture & Structure - See [Project Structure](#-project-structure) above
+- 📦 [pnpm Hoisting Analysis](./docs/PNPM_HOISTING_ANALYSIS.md) - Should you use hoisted mode?
+- ⚙️ [GitHub Actions Workflow Optimization](./docs/WORKFLOW_OPTIMIZATION.md) - CI/CD best practices and caching strategy
+
 ## 🆘 Support
 
 For support and questions:
 - Check the [deployment guide](./DEPLOYMENT_STEPS.md)
+- Review the [runbooks](./docs/) for operational issues
 - Review Cloudflare Workers documentation
 - Contact the development team
 

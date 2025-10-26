@@ -1,15 +1,21 @@
+"use client"
+
 import { login } from "@lib/data/customer"
+import { validateCountryCode } from "@lib/util/validate-country-code"
 import { LOGIN_VIEW } from "@modules/account/templates/login-template"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import Input from "@modules/common/components/input"
 import { useActionState } from "react"
+import { useParams } from "next/navigation"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
 }
 
 const Login = ({ setCurrentView }: Props) => {
+  const { countryCode: cc } = useParams<{ countryCode?: string }>()
+  const countryCode = validateCountryCode(cc)
   const [message, formAction] = useActionState(login, null)
 
   return (
@@ -22,6 +28,7 @@ const Login = ({ setCurrentView }: Props) => {
         Sign in to access an enhanced shopping experience.
       </p>
       <form className="w-full" action={formAction}>
+        <input type="hidden" name="countryCode" value={countryCode} />
         <div className="flex flex-col w-full gap-y-2">
           <Input
             label="Email"

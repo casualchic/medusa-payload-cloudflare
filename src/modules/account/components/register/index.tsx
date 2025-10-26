@@ -1,18 +1,22 @@
 "use client"
 
 import { useActionState } from "react"
+import { useParams } from "next/navigation"
 import Input from "@modules/common/components/input"
 import { LOGIN_VIEW } from "@modules/account/templates/login-template"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { signup } from "@lib/data/customer"
+import { validateCountryCode } from "@lib/util/validate-country-code"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
 }
 
 const Register = ({ setCurrentView }: Props) => {
+  const { countryCode: cc } = useParams<{ countryCode?: string }>()
+  const countryCode = validateCountryCode(cc)
   const [message, formAction] = useActionState(signup, null)
 
   return (
@@ -28,6 +32,7 @@ const Register = ({ setCurrentView }: Props) => {
         shopping experience.
       </p>
       <form className="w-full flex flex-col" action={formAction}>
+        <input type="hidden" name="countryCode" value={countryCode} />
         <div className="flex flex-col w-full gap-y-2">
           <Input
             label="First name"
@@ -67,7 +72,7 @@ const Register = ({ setCurrentView }: Props) => {
             data-testid="password-input"
           />
         </div>
-        <ErrorMessage error={typeof message === 'string' ? message : null} data-testid="register-error" />
+        <ErrorMessage error={message} data-testid="register-error" />
         <span className="text-center text-ui-fg-base text-small-regular mt-6">
           By creating an account, you agree to Medusa Store&apos;s{" "}
           <LocalizedClientLink
