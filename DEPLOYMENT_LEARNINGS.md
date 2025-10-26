@@ -171,6 +171,16 @@ Prevent pnpm from auto-installing the peer dependency:
 3. ✅ NOT in devDependencies - Explicit removal
 Result: Package never installed → Never bundled → Deployment succeeds
 
+**Verification:**
+```bash
+# Verify the package is not installed
+pnpm install && test ! -d node_modules/@opentelemetry/api && echo "✅ Not installed"
+```
+
+**Test Coverage:**
+- Regression tests in `tests/unit/dependencies.test.ts` prevent accidental removal of configuration
+- Tests verify serverExternalPackages, peerDependencyRules, and package absence in lockfile
+
 ### 7. **Turbopack Build Support (Drizzle ORM Compatibility)**
 
 **Issue**: Next.js Turbopack (experimental bundler) fails when parsing Drizzle ORM's libSQL driver dependencies.
