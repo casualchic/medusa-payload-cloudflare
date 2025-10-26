@@ -32,6 +32,7 @@ if ((npmLockExists || yarnLockExists || (execPath && !execPath.includes('pnpm'))
 
 const apiPath = path.resolve(process.cwd(), 'node_modules/@opentelemetry/api')
 
+// Check if package exists (handles both directories and symlinks)
 if (fs.existsSync(apiPath)) {
   console.error('\n' + '='.repeat(60))
   console.error('❌ ERROR: @opentelemetry/api is installed')
@@ -47,9 +48,10 @@ if (fs.existsSync(apiPath)) {
   console.error('See: DEPLOYMENT_LEARNINGS.md section 6')
   console.error('='.repeat(60) + '\n')
 
-  // Exit with error in CI environments, warn in development
+  // Exit with error in CI or strict mode, warn in development
   // CI=true is set by most CI providers (GitHub Actions, GitLab CI, Travis, etc.)
-  if (process.env.CI) {
+  // STRICT_DEPS=true can be used to enforce locally (e.g., pre-commit hooks)
+  if (process.env.CI || process.env.STRICT_DEPS) {
     process.exit(1)
   }
   // In development: allow continuation while alerting to the issue

@@ -81,7 +81,8 @@ jobs:
     # Related: PR #48 - Peer dependency exclusion for Cloudflare Workers compatibility
     - name: Verify OpenTelemetry exclusion
       run: |
-        if [ -d "node_modules/@opentelemetry/api" ]; then
+        # Check both directory and symlink (handles edge cases)
+        if [ -d "node_modules/@opentelemetry/api" ] || [ -L "node_modules/@opentelemetry/api" ]; then
           echo "❌ Error: @opentelemetry/api should not be installed"
           echo "This package causes platform resolution errors in Cloudflare Workers"
           echo "Check peerDependencyRules.ignoreMissing in package.json"
