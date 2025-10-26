@@ -131,7 +131,12 @@
       "sharp",
       "unrs-resolver",
       "workerd"
-    ]
+    ],
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "@opentelemetry/api"
+      ]
+    }
   },
   "cloudflare": {
     "bindings": {
