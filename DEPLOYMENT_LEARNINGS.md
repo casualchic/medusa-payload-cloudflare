@@ -185,6 +185,11 @@ pnpm install && test ! -d node_modules/@opentelemetry/api && echo "✅ Not insta
 
 # Quick health check - run periodically after dependency updates
 pnpm why @opentelemetry/api 2>&1 | grep -q "not found" && echo "✅ Correctly excluded" || echo "⚠️  Package detected"
+
+# Manual verification of detection logic (optional, for testing the checks work)
+# WARNING: This temporarily installs the problematic package
+pnpm add -D @opentelemetry/api  # Should trigger warnings in predev hook and fail CI
+pnpm remove @opentelemetry/api && rm -rf node_modules pnpm-lock.yaml && pnpm install
 ```
 
 **Test Coverage:**
