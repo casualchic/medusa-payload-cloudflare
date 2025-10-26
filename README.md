@@ -22,6 +22,10 @@ A modern e-commerce storefront built with Next.js, Payload CMS, and Medusa, depl
 
 ### Additional Documentation
 - **[Implementation Summary](IMPLEMENTATION_SUMMARY.md)** - Overview, features, and deployment checklist
+- **[Deployment Learnings](DEPLOYMENT_LEARNINGS.md)** - Production deployment issues and solutions
+  - OpenTelemetry exclusion for Cloudflare Workers
+  - Webpack vs Turbopack compatibility
+  - Quick health checks and troubleshooting
 - **[Next.js RSC Patterns](NEXTJS_RSC_PATTERNS.md)** - React Server Components architecture
 - **[Advanced Optimizations](ADVANCED_OPTIMIZATIONS.md)** - Performance tuning and caching
 - **[Build Pipeline](BUILD_PIPELINE.md)** - CI/CD workflow and build optimization
