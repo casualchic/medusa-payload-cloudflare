@@ -11,23 +11,26 @@ const fs = require('fs')
 const path = require('path')
 
 // Verify pnpm is being used (npm/yarn handle peer dependencies differently)
-// Check both npm_execpath (when run via npm script) and lockfile presence
-const execPath = process.env.npm_execpath || ''
-const pnpmLockExists = fs.existsSync(path.resolve(process.cwd(), 'pnpm-lock.yaml'))
-const npmLockExists = fs.existsSync(path.resolve(process.cwd(), 'package-lock.json'))
-const yarnLockExists = fs.existsSync(path.resolve(process.cwd(), 'yarn.lock'))
+// If pnpm-lock.yaml exists, any other lockfile indicates wrong package manager
+try {
+  const pnpmLockExists = fs.existsSync(path.resolve(process.cwd(), 'pnpm-lock.yaml'))
+  const npmLockExists = fs.existsSync(path.resolve(process.cwd(), 'package-lock.json'))
+  const yarnLockExists = fs.existsSync(path.resolve(process.cwd(), 'yarn.lock'))
 
-// Warn if using wrong package manager (detected by lockfile or execpath)
-if ((npmLockExists || yarnLockExists || (execPath && !execPath.includes('pnpm'))) && pnpmLockExists) {
-  console.warn('\n' + '='.repeat(60))
-  console.warn('⚠️  WARNING: This project requires pnpm')
-  console.warn('='.repeat(60))
-  console.warn('npm and yarn handle peer dependencies differently')
-  console.warn('This may cause @opentelemetry/api to be auto-installed')
-  console.warn('')
-  console.warn('Install pnpm: npm install -g pnpm')
-  console.warn('Then run: pnpm install')
-  console.warn('='.repeat(60) + '\n')
+  // Warn if pnpm-lock.yaml exists alongside npm/yarn lockfiles (wrong package manager used)
+  if (pnpmLockExists && (npmLockExists || yarnLockExists)) {
+    console.warn('\n' + '='.repeat(60))
+    console.warn('⚠️  WARNING: This project requires pnpm')
+    console.warn('='.repeat(60))
+    console.warn('npm and yarn handle peer dependencies differently')
+    console.warn('This may cause @opentelemetry/api to be auto-installed')
+    console.warn('')
+    console.warn('Install pnpm: npm install -g pnpm')
+    console.warn('Then run: pnpm install')
+    console.warn('='.repeat(60) + '\n')
+  }
+} catch (error) {
+  console.warn('⚠️  Could not verify package manager:', error.message)
 }
 
 const apiPath = path.resolve(process.cwd(), 'node_modules/@opentelemetry/api')

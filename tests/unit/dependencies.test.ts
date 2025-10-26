@@ -15,6 +15,11 @@ import { resolve } from 'path'
  *
  * For complete context and troubleshooting, see: DEPLOYMENT_LEARNINGS.md section 6
  */
+
+// Pattern to detect @opentelemetry/api in pnpm lockfile
+// The '@' separator only appears in package entries like '@opentelemetry/api@1.9.0:'
+const OPENTELEMETRY_API_LOCKFILE_PATTERN = /@opentelemetry\/api@/
+
 describe('Critical Dependencies Configuration', () => {
   it('should have @opentelemetry/api in serverExternalPackages', () => {
     const nextConfigPath = resolve(process.cwd(), 'next.config.ts')
@@ -60,14 +65,13 @@ describe('Critical Dependencies Configuration', () => {
     // Verify @opentelemetry/api is not in the lockfile packages section
     // This ensures pnpm doesn't auto-install it as a peer dependency
     //
-    // Pattern choice: '@opentelemetry/api@' (simple and maintainable)
+    // Pattern rationale (defined at top of file):
     // - More maintainable than matching specific version formats like [\d^~][\d.]+
     // - Covers all version specifiers: @1.9.0, @^1.0.0, @>=1.0.0, @latest, @beta.1, etc.
     // - '@' separator ONLY appears in package entries, not dependency declarations
     // - False positives impossible: pnpm lockfiles have no comments, consistent YAML structure
-    // - Could add /^\s+'@opentelemetry\/api@/m but unnecessary - '@' separator is unique enough
     // - Tested with pnpm 9.x lockfile format; may need adjustment if format changes in v10+
-    expect(lockfileContent).not.toMatch(/@opentelemetry\/api@/)
+    expect(lockfileContent).not.toMatch(OPENTELEMETRY_API_LOCKFILE_PATTERN)
   })
 
   it('should have peerDependencyRules.ignoreMissing for @opentelemetry/api', () => {
