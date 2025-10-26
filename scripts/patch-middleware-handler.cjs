@@ -23,8 +23,8 @@ if (content.includes('// PATCHED: Handle undefined import.meta.url')) {
 }
 
 // Find and replace the topLevelCreateRequire call
-// The actual pattern in the handler is: const require = topLevelCreateRequire(import.meta.url);
-const topLevelCreateRequirePattern = /const require = topLevelCreateRequire\(import\.meta\.url\);/;
+// The pattern might have variable whitespace, so be more flexible
+const topLevelCreateRequirePattern = /const\s+require\s*=\s*topLevelCreateRequire\s*\(\s*import\.meta\.url\s*\)\s*;/;
 
 if (content.match(topLevelCreateRequirePattern)) {
   // Replace with a safe version that handles undefined import.meta.url
@@ -37,7 +37,17 @@ if (content.match(topLevelCreateRequirePattern)) {
   fs.writeFileSync(handlerPath, content, 'utf8');
   console.log('✓ Patched middleware handler.mjs to handle undefined import.meta.url');
 } else {
-  console.log('⚠️  Could not find topLevelCreateRequire pattern to patch');
-  // Log first 500 chars to help debug
-  console.log('First 500 chars of handler.mjs:', content.substring(0, 500));
+  // Try alternative: maybe it's all on one line without line breaks
+  const inlinePattern = /topLevelCreateRequire\(import\.meta\.url\)/;
+  if (content.match(inlinePattern)) {
+    content = content.replace(
+      inlinePattern,
+      '(typeof import.meta.url !== "undefined" ? topLevelCreateRequire(import.meta.url) : (() => { const n = () => { throw new Error("require not available"); }; n.resolve = n; return n; })())'
+    );
+    fs.writeFileSync(handlerPath, content, 'utf8');
+    console.log('✓ Patched middleware handler.mjs with inline pattern');
+  } else {
+    console.log('⚠️  Could not find any createRequire pattern to patch');
+    console.log('First 300 chars:', content.substring(0, 300));
+  }
 }
