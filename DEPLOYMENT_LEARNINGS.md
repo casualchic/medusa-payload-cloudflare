@@ -214,10 +214,14 @@ If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) pe
 4. Evaluate alternative observability solutions compatible with Workers runtime
 5. If no workaround exists, consider migrating to different deployment platform
 
-**Known Compatible Versions:**
-- Next.js 16.0.0: `@opentelemetry/api` is optional peer dependency
-- Drizzle ORM 0.44.6: `@opentelemetry/api` is optional peer dependency
+**Known Compatible Versions (Requiring This Workaround):**
+- Next.js 16.0.0+: `@opentelemetry/api` is optional peer dependency (may auto-install with npm/yarn)
+- Drizzle ORM 0.44.6+: `@opentelemetry/api` is optional peer dependency (may auto-install with npm/yarn)
+- Cloudflare Workers: Does not support Node.js platform-specific code in `@opentelemetry/api`
 - Last verified: 2025-10-26 (PR #48)
+- **This workaround is required as long as:**
+  1. Dependencies declare `@opentelemetry/api` as peer dependency, AND
+  2. Cloudflare Workers doesn't support OpenTelemetry's platform-specific code
 
 **Review Schedule:**
 - Review this configuration when upgrading Next.js major versions
@@ -226,10 +230,16 @@ If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) pe
   - [Next.js OpenTelemetry issues](https://github.com/vercel/next.js/labels/area%3A%20OpenTelemetry)
   - [Drizzle ORM issues](https://github.com/drizzle-team/drizzle-orm/issues)
 
-**Future Enhancements (Optional):**
-- GitHub Actions workflow for monthly peer dependency status checks
-- Custom ESLint rule to prevent accidental addition to dependencies
-- Automated issue tracker monitoring with notifications
+**Future Enhancements (Priority Order):**
+1. **High Priority**: GitHub Actions workflow for monthly peer dependency status checks
+   - Easy to implement, high value
+   - Automatically detects if peer dependency status changes
+2. **Medium Priority**: Custom ESLint rule to prevent accidental addition to dependencies
+   - Good developer experience, requires initial setup
+   - Catches issues at development time
+3. **Low Priority**: Automated issue tracker monitoring with notifications
+   - Complex to implement, may have false positives
+   - Manual monitoring via links above is sufficient
 
 **Troubleshooting: If Package Appears Again**
 
