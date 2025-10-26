@@ -1,7 +1,15 @@
 import type { Block } from 'payload'
 
+// Type for FeaturedProducts block data
+interface FeaturedProductsBlockData {
+  displayMode?: 'manual' | 'latest' | 'random'
+  products?: unknown[]
+  limit?: number
+}
+
 // Shared helper to check if display mode is manual
-const isManualMode = (data: any): boolean => data?.displayMode === 'manual'
+const isManualMode = (data: unknown): boolean =>
+  (data as FeaturedProductsBlockData)?.displayMode === 'manual'
 
 export const FeaturedProductsBlock: Block = {
   slug: 'featuredProducts',
@@ -45,7 +53,7 @@ export const FeaturedProductsBlock: Block = {
       relationTo: 'products',
       hasMany: true,
       maxDepth: 1,
-      validate: (value: unknown, { data }: { data: any }) => {
+      validate: (value: unknown, { data }: { data: unknown }) => {
         if (isManualMode(data) && (!value || (Array.isArray(value) && value.length === 0))) {
           return 'Please select at least one product for manual display mode'
         }
@@ -62,7 +70,7 @@ export const FeaturedProductsBlock: Block = {
       min: 1,
       max: 12,
       defaultValue: 4,
-      validate: (value: unknown, { data }: { data: any }) => {
+      validate: (value: unknown, { data }: { data: unknown }) => {
         // Ignore validation in manual mode (field is hidden anyway)
         if (isManualMode(data)) {
           return true
