@@ -192,6 +192,8 @@ pnpm why @opentelemetry/api 2>&1 | grep -q "not found" && echo "✅ Correctly ex
 - Tests verify serverExternalPackages, peerDependencyRules, and package absence in lockfile
 - CI workflow explicit check in `.github/workflows/deploy.yml` (fails fast if package installed)
 - Development predev hook in `scripts/verify-dependencies.cjs` warns developers before starting dev server
+  - Verifies pnpm is being used (npm/yarn handle peer dependencies differently)
+  - Detects wrong package manager by checking for npm/yarn lockfiles
 
 **Future Monitoring:**
 If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) peer dependency:

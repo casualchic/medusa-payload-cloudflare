@@ -10,6 +10,22 @@
 const fs = require('fs')
 const path = require('path')
 
+// Verify pnpm is being used (npm/yarn handle peer dependencies differently)
+// Check both npm_execpath (when run via npm script) and lockfile presence
+const execPath = process.env.npm_execpath || ''
+const pnpmLockExists = fs.existsSync(path.resolve(process.cwd(), 'pnpm-lock.yaml'))
+const npmLockExists = fs.existsSync(path.resolve(process.cwd(), 'package-lock.json'))
+const yarnLockExists = fs.existsSync(path.resolve(process.cwd(), 'yarn.lock'))
+
+// Warn if using wrong package manager (detected by lockfile or execpath)
+if ((npmLockExists || yarnLockExists || (execPath && !execPath.includes('pnpm'))) && pnpmLockExists) {
+  console.warn('\n⚠️  WARNING: This project requires pnpm')
+  console.warn('   npm and yarn handle peer dependencies differently')
+  console.warn('   This may cause @opentelemetry/api to be auto-installed')
+  console.warn('\n   Install pnpm: npm install -g pnpm')
+  console.warn('   Then run: pnpm install\n')
+}
+
 const apiPath = path.resolve(process.cwd(), 'node_modules/@opentelemetry/api')
 
 if (fs.existsSync(apiPath)) {
