@@ -135,9 +135,15 @@ serverExternalPackages: ['drizzle-kit', 'esbuild-register', 'esbuild', '@opentel
 
 **How It Works:**
 1. Next.js has try/catch: attempts `require('@opentelemetry/api')`, falls back to compiled version
-2. By marking as external, bundler skips the package
+2. By marking as external, bundler (Webpack or Turbopack) skips the package
 3. At runtime, require fails (not bundled), Next.js uses its built-in fallback
 4. No platform-specific code needs resolution → deployment succeeds
+
+**Bundler Compatibility:**
+- ✅ **Webpack**: This solution works with Webpack (currently used via `--webpack` flag)
+- ✅ **Turbopack**: This solution also works with Turbopack once Drizzle compatibility is resolved
+- The `serverExternalPackages` configuration is bundler-agnostic and applies to both
+- See section 7 below for Turbopack/Drizzle compatibility details
 
 **⚠️ IMPORTANT**: Do NOT remove `@opentelemetry/api` from `serverExternalPackages`
 - Regression test in `tests/unit/dependencies.test.ts` prevents accidental removal
@@ -186,7 +192,13 @@ pnpm install && test ! -d node_modules/@opentelemetry/api && echo "✅ Not insta
 If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) peer dependency:
 - Unit tests will continue passing (package correctly excluded)
 - Build may fail if package becomes truly required
-- Solution: Re-evaluate externalization approach or investigate Cloudflare Workers OpenTelemetry support
+
+**Action Required if Build Fails After Dependency Updates:**
+1. Check if `@opentelemetry/api` is now required (not optional) via peer dependency warnings
+2. Investigate Cloudflare Workers OpenTelemetry compatibility and support status
+3. Consider using a polyfill or shim for Node.js platform-specific APIs
+4. Evaluate alternative observability solutions compatible with Workers runtime
+5. If no workaround exists, consider migrating to different deployment platform
 
 **Review Schedule:**
 - Review this configuration when upgrading Next.js major versions

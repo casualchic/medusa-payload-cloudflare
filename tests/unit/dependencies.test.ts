@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync, statSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
 import { resolve } from 'path'
 
 describe('Critical Dependencies Configuration', () => {
@@ -46,8 +46,8 @@ describe('Critical Dependencies Configuration', () => {
 
     // Verify @opentelemetry/api is not in the lockfile packages section
     // This ensures pnpm doesn't auto-install it as a peer dependency
-    // Match any pnpm package entry: '@opentelemetry/api@<version>:' (colon indicates lockfile entry)
-    expect(lockfileContent).not.toMatch(/@opentelemetry\/api@[^\s:]+:/)
+    // Match any package entry with @ version separator (simplest and most comprehensive)
+    expect(lockfileContent).not.toMatch(/@opentelemetry\/api@/)
   })
 
   it('should have peerDependencyRules.ignoreMissing for @opentelemetry/api', () => {
@@ -67,6 +67,7 @@ describe('Critical Dependencies Configuration', () => {
 
     // Verify the package directory does not exist at runtime
     // This is the most direct check matching the verification command in DEPLOYMENT_LEARNINGS.md
-    expect(() => statSync(apiPath)).toThrow()
+    // Using existsSync is more explicit than expecting statSync to throw
+    expect(existsSync(apiPath)).toBe(false)
   })
 })
