@@ -18,7 +18,7 @@
     "dev:local": "cross-env NODE_OPTIONS=--no-deprecation next dev -p 8000",
     "dev:cloud": "cp .env.production .env.local && cross-env NODE_OPTIONS=--no-deprecation next dev -p 8000",
     "devsafe": "rm -rf .next && rm -rf .open-next && cross-env NODE_OPTIONS=--no-deprecation next dev",
-    "build": "NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack && node scripts/patch-opentelemetry.js",
+    "build": "NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack && node scripts/patch-opentelemetry.cjs",
     "build:local": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack",
     "build:cloud": "cp .env.production .env.local && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start -p 8000",
