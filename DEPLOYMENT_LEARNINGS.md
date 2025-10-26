@@ -188,6 +188,13 @@ If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) pe
 - Build may fail if package becomes truly required
 - Solution: Re-evaluate externalization approach or investigate Cloudflare Workers OpenTelemetry support
 
+**Review Schedule:**
+- Review this configuration when upgrading Next.js major versions
+- Review when upgrading Drizzle ORM to new major versions
+- Monitor relevant issue trackers:
+  - [Next.js OpenTelemetry issues](https://github.com/vercel/next.js/labels/area%3A%20OpenTelemetry)
+  - [Drizzle ORM issues](https://github.com/drizzle-team/drizzle-orm/issues)
+
 ### 7. **Turbopack Build Support (Drizzle ORM Compatibility)**
 
 **Issue**: Next.js Turbopack (experimental bundler) fails when parsing Drizzle ORM's libSQL driver dependencies.
