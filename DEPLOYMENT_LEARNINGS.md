@@ -207,6 +207,11 @@ If Next.js or Drizzle ORM make `@opentelemetry/api` a required (non-optional) pe
 4. Evaluate alternative observability solutions compatible with Workers runtime
 5. If no workaround exists, consider migrating to different deployment platform
 
+**Known Compatible Versions:**
+- Next.js 16.0.0: `@opentelemetry/api` is optional peer dependency
+- Drizzle ORM 0.44.6: `@opentelemetry/api` is optional peer dependency
+- Last verified: 2025-10-26 (PR #48)
+
 **Review Schedule:**
 - Review this configuration when upgrading Next.js major versions
 - Review when upgrading Drizzle ORM to new major versions
