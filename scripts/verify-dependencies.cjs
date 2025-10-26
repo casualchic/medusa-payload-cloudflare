@@ -18,7 +18,8 @@ try {
   const yarnLockExists = fs.existsSync(path.resolve(process.cwd(), 'yarn.lock'))
 
   // Warn if pnpm-lock.yaml exists alongside npm/yarn lockfiles (wrong package manager used)
-  if (pnpmLockExists && (npmLockExists || yarnLockExists)) {
+  const wrongPackageManagerUsed = pnpmLockExists && (npmLockExists || yarnLockExists)
+  if (wrongPackageManagerUsed) {
     console.warn('\n' + '='.repeat(60))
     console.warn('⚠️  WARNING: This project requires pnpm')
     console.warn('='.repeat(60))
