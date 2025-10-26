@@ -60,6 +60,7 @@
     "vitest.config.mts",
     "vitest.unit.config.mts",
     "vitest.workflows.config.mts",
+    "open-next.config.ts",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
