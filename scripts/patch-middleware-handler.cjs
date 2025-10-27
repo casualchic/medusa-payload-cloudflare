@@ -22,32 +22,43 @@ if (content.includes('// PATCHED: Handle undefined import.meta.url')) {
   process.exit(0);
 }
 
-// Find and replace the topLevelCreateRequire call
-// The pattern might have variable whitespace, so be more flexible
-const topLevelCreateRequirePattern = /const\s+require\s*=\s*topLevelCreateRequire\s*\(\s*import\.meta\.url\s*\)\s*;/;
+// Find and replace all import.meta.url usages
+let patched = false;
 
+// 1. Patch topLevelCreateRequire
+const topLevelCreateRequirePattern = /topLevelCreateRequire\(import\.meta\.url\)/g;
 if (content.match(topLevelCreateRequirePattern)) {
-  // Replace with a safe version that handles undefined import.meta.url
   content = content.replace(
     topLevelCreateRequirePattern,
-    '// PATCHED: Handle undefined import.meta.url in Cloudflare Workers\n' +
-    'const require = typeof import.meta.url !== "undefined" ? topLevelCreateRequire(import.meta.url) : (() => { const notAvailable = () => { throw new Error("require() is not available in Cloudflare Workers"); }; notAvailable.resolve = notAvailable; return notAvailable; })();'
+    '(typeof import.meta.url !== "undefined" ? topLevelCreateRequire(import.meta.url) : (() => { const n = () => { throw new Error("require not available"); }; n.resolve = n; return n; })())'
   );
+  patched = true;
+}
 
+// 2. Patch new URL('.', import.meta.url) for __dirname
+const urlPattern = /new URL\(['"]\.['"],\s*import\.meta\.url\)/g;
+if (content.match(urlPattern)) {
+  content = content.replace(
+    urlPattern,
+    '(typeof import.meta.url !== "undefined" ? new URL(".", import.meta.url) : { href: "file:///", pathname: "/" })'
+  );
+  patched = true;
+}
+
+// 3. Patch any other import.meta.url references
+const anyImportMetaUrl = /import\.meta\.url/g;
+if (content.match(anyImportMetaUrl)) {
+  content = content.replace(
+    anyImportMetaUrl,
+    '(import.meta.url || "file:///")'
+  );
+  patched = true;
+}
+
+if (patched) {
   fs.writeFileSync(handlerPath, content, 'utf8');
   console.log('✓ Patched middleware handler.mjs to handle undefined import.meta.url');
 } else {
-  // Try alternative: maybe it's all on one line without line breaks
-  const inlinePattern = /topLevelCreateRequire\(import\.meta\.url\)/;
-  if (content.match(inlinePattern)) {
-    content = content.replace(
-      inlinePattern,
-      '(typeof import.meta.url !== "undefined" ? topLevelCreateRequire(import.meta.url) : (() => { const n = () => { throw new Error("require not available"); }; n.resolve = n; return n; })())'
-    );
-    fs.writeFileSync(handlerPath, content, 'utf8');
-    console.log('✓ Patched middleware handler.mjs with inline pattern');
-  } else {
-    console.log('⚠️  Could not find any createRequire pattern to patch');
-    console.log('First 300 chars:', content.substring(0, 300));
-  }
+  console.log('⚠️  No import.meta.url patterns found to patch');
+  console.log('First 300 chars:', content.substring(0, 300));
 }
