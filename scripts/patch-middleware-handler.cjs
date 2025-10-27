@@ -55,7 +55,26 @@ if (content.match(fileURLToPathPattern)) {
   patched = true;
 }
 
-// 4. Fix NEXT_DIR and OPEN_NEXT_DIR to use relative paths in Cloudflare Workers
+// 4. Inline required-server-files.json config instead of reading from filesystem
+// Cloudflare Workers can't read files at runtime, so we inline the config
+const requiredServerFilesPath = path.join(__dirname, '../.open-next/middleware/.next/required-server-files.json');
+if (fs.existsSync(requiredServerFilesPath)) {
+  const configData = fs.readFileSync(requiredServerFilesPath, 'utf8');
+  const { config } = JSON.parse(configData);
+
+  // Replace loadConfig function with inline config
+  const loadConfigPattern = /function loadConfig\(nextDir\) \{[^}]+\}/g;
+  if (content.match(loadConfigPattern)) {
+    content = content.replace(
+      loadConfigPattern,
+      `function loadConfig(nextDir) {\n  // PATCHED: Inlined config for Cloudflare Workers\n  return ${JSON.stringify(config)};\n}`
+    );
+    patched = true;
+    console.log('✓ Inlined Next.js config into middleware handler');
+  }
+}
+
+// 5. Fix NEXT_DIR and OPEN_NEXT_DIR to use relative paths in Cloudflare Workers
 // __dirname can be "/" or "/bundle" depending on Wrangler's bundling context
 const nextDirPattern = /var NEXT_DIR = path2\.join\(__dirname, ".next"\);/g;
 if (content.match(nextDirPattern)) {
