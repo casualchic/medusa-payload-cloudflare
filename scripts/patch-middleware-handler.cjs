@@ -63,7 +63,8 @@ if (fs.existsSync(requiredServerFilesPath)) {
   const { config } = JSON.parse(configData);
 
   // Replace loadConfig function with inline config
-  const loadConfigPattern = /function loadConfig\(nextDir\) \{[^}]+\}/g;
+  // Match the entire function including multiline content
+  const loadConfigPattern = /function loadConfig\(nextDir\) \{[\s\S]*?\n\s*return config;\n\}/g;
   if (content.match(loadConfigPattern)) {
     content = content.replace(
       loadConfigPattern,
