@@ -22,35 +22,35 @@ if (content.includes('// PATCHED: Handle undefined import.meta.url')) {
   process.exit(0);
 }
 
-// Find and replace all import.meta.url usages
+// Find and replace all import.meta.url usages - specific patterns first!
 let patched = false;
 
-// 1. Patch topLevelCreateRequire
+// 1. Patch topLevelCreateRequire(import.meta.url)
 const topLevelCreateRequirePattern = /topLevelCreateRequire\(import\.meta\.url\)/g;
 if (content.match(topLevelCreateRequirePattern)) {
   content = content.replace(
     topLevelCreateRequirePattern,
-    '(typeof import.meta.url !== "undefined" ? topLevelCreateRequire(import.meta.url) : (() => { const n = () => { throw new Error("require not available"); }; n.resolve = n; return n; })())'
+    'topLevelCreateRequire(typeof import.meta.url !== "undefined" ? import.meta.url : "file:///")'
   );
   patched = true;
 }
 
 // 2. Patch new URL('.', import.meta.url) for __dirname
-const urlPattern = /new URL\(['"]\.['"],\s*import\.meta\.url\)/g;
+const urlPattern = /new URL\(['"]\.['"]\s*,\s*import\.meta\.url\)/g;
 if (content.match(urlPattern)) {
   content = content.replace(
     urlPattern,
-    '(typeof import.meta.url !== "undefined" ? new URL(".", import.meta.url) : { href: "file:///", pathname: "/" })'
+    'new URL(".", typeof import.meta.url !== "undefined" ? import.meta.url : "file:///")'
   );
   patched = true;
 }
 
-// 3. Patch any other import.meta.url references
-const anyImportMetaUrl = /import\.meta\.url/g;
-if (content.match(anyImportMetaUrl)) {
+// 3. Patch fileURLToPath(import.meta.url) if present
+const fileURLToPathPattern = /fileURLToPath\(import\.meta\.url\)/g;
+if (content.match(fileURLToPathPattern)) {
   content = content.replace(
-    anyImportMetaUrl,
-    '(import.meta.url || "file:///")'
+    fileURLToPathPattern,
+    'fileURLToPath(typeof import.meta.url !== "undefined" ? import.meta.url : "file:///")'
   );
   patched = true;
 }
