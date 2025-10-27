@@ -55,6 +55,25 @@ if (content.match(fileURLToPathPattern)) {
   patched = true;
 }
 
+// 4. Fix NEXT_DIR and OPEN_NEXT_DIR to use relative paths in Cloudflare Workers
+const nextDirPattern = /var NEXT_DIR = path2\.join\(__dirname, "\.next"\);/g;
+if (content.match(nextDirPattern)) {
+  content = content.replace(
+    nextDirPattern,
+    'var NEXT_DIR = __dirname === "/" ? ".next" : path2.join(__dirname, ".next");'
+  );
+  patched = true;
+}
+
+const openNextDirPattern = /var OPEN_NEXT_DIR = path2\.join\(__dirname, "\.open-next"\);/g;
+if (content.match(openNextDirPattern)) {
+  content = content.replace(
+    openNextDirPattern,
+    'var OPEN_NEXT_DIR = __dirname === "/" ? ".open-next" : path2.join(__dirname, ".open-next");'
+  );
+  patched = true;
+}
+
 if (patched) {
   fs.writeFileSync(handlerPath, content, 'utf8');
   console.log('✓ Patched middleware handler.mjs to handle undefined import.meta.url');
