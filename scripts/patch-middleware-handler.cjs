@@ -55,24 +55,49 @@ if (content.match(fileURLToPathPattern)) {
   patched = true;
 }
 
-// 4. Inline required-server-files.json config instead of reading from filesystem
-// Cloudflare Workers can't read files at runtime, so we inline the config
-const requiredServerFilesPath = path.join(__dirname, '../.open-next/middleware/.next/required-server-files.json');
-if (fs.existsSync(requiredServerFilesPath)) {
-  const configData = fs.readFileSync(requiredServerFilesPath, 'utf8');
-  const { config } = JSON.parse(configData);
+// 4. Create virtual filesystem for Cloudflare Workers
+// Cloudflare Workers can't read files at runtime, so we inline all needed files
+const nextDir = path.join(__dirname, '../.open-next/middleware/.next');
+const virtualFs = {};
 
-  // Replace loadConfig function with inline config
-  // Match the entire function including multiline content
-  const loadConfigPattern = /function loadConfig\(nextDir\) \{[\s\S]*?\n\s*return config;\n\}/g;
-  if (content.match(loadConfigPattern)) {
-    content = content.replace(
-      loadConfigPattern,
-      `function loadConfig(nextDir) {\n  // PATCHED: Inlined config for Cloudflare Workers\n  return ${JSON.stringify(config)};\n}`
-    );
-    patched = true;
-    console.log('✓ Inlined Next.js config into middleware handler');
+// Read all necessary files and store in virtual filesystem
+const filesToInline = [
+  'required-server-files.json',
+  'BUILD_ID',
+  'routes-manifest.json',
+  'prerender-manifest.json',
+  'app-path-routes-manifest.json'
+];
+
+filesToInline.forEach(file => {
+  const filePath = path.join(nextDir, file);
+  if (fs.existsSync(filePath)) {
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    virtualFs[`.next/${file}`] = fileContent;
   }
+});
+
+// Inject virtual filesystem at the top of the file
+const virtualFsCode = `
+// PATCHED: Virtual filesystem for Cloudflare Workers
+const __virtualFs = ${JSON.stringify(virtualFs, null, 2)};
+const __originalReadFileSync = fs.readFileSync;
+fs.readFileSync = function(filePath, encoding) {
+  const normalizedPath = filePath.replace(/\\\\/g, '/').replace(/^.*\\.next\\//, '.next/');
+  if (__virtualFs[normalizedPath]) {
+    return __virtualFs[normalizedPath];
+  }
+  // Fallback to original for other files
+  return __originalReadFileSync(filePath, encoding);
+};
+`;
+
+// Insert after fs import
+const fsImportPattern = /(import fs from "node:fs";)/;
+if (content.match(fsImportPattern)) {
+  content = content.replace(fsImportPattern, `$1${virtualFsCode}`);
+  patched = true;
+  console.log('✓ Injected virtual filesystem for Cloudflare Workers');
 }
 
 // 5. Fix NEXT_DIR and OPEN_NEXT_DIR to use relative paths in Cloudflare Workers
