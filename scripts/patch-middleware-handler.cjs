@@ -66,7 +66,10 @@ const filesToInline = [
   'BUILD_ID',
   'routes-manifest.json',
   'prerender-manifest.json',
-  'app-path-routes-manifest.json'
+  'app-path-routes-manifest.json',
+  'server/pages-manifest.json',
+  'server/middleware-manifest.json',
+  'server/app-paths-manifest.json'
 ];
 
 filesToInline.forEach(file => {
