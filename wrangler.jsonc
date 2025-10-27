@@ -74,6 +74,7 @@
         "NODE_ENV": "production",
         "MEDUSA_BACKEND_URL": "https://casual-chic.medusajs.app",
         "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY": "pk_f086d3c7cf6026676f9eef829d75bfcfdc8ca77ae1eeafbb2e06d367938ac456",
+        "PAYLOAD_SECRET": "670ba53416dab189c6de776c664d0845b92aeeaa02b5dadd222c304087c08a1b",
       },
       "d1_databases": [
         {
