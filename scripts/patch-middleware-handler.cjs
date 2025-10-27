@@ -56,11 +56,12 @@ if (content.match(fileURLToPathPattern)) {
 }
 
 // 4. Fix NEXT_DIR and OPEN_NEXT_DIR to use relative paths in Cloudflare Workers
+// __dirname can be "/" or "/bundle" depending on Wrangler's bundling context
 const nextDirPattern = /var NEXT_DIR = path2\.join\(__dirname, "\.next"\);/g;
 if (content.match(nextDirPattern)) {
   content = content.replace(
     nextDirPattern,
-    'var NEXT_DIR = __dirname === "/" ? ".next" : path2.join(__dirname, ".next");'
+    'var NEXT_DIR = __dirname.startsWith("/") ? ".next" : path2.join(__dirname, ".next");'
   );
   patched = true;
 }
@@ -69,7 +70,7 @@ const openNextDirPattern = /var OPEN_NEXT_DIR = path2\.join\(__dirname, "\.open-
 if (content.match(openNextDirPattern)) {
   content = content.replace(
     openNextDirPattern,
-    'var OPEN_NEXT_DIR = __dirname === "/" ? ".open-next" : path2.join(__dirname, ".open-next");'
+    'var OPEN_NEXT_DIR = __dirname.startsWith("/") ? ".open-next" : path2.join(__dirname, ".open-next");'
   );
   patched = true;
 }
