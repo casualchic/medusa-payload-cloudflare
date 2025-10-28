@@ -1,338 +1,351 @@
-# Casual Chic Boutique - Cloudflare Storefront
+# Damascus
 
-A modern e-commerce storefront built with Next.js, Payload CMS, and Medusa, deployed on Cloudflare Workers. This project combines the power of Medusa's e-commerce backend with Payload CMS for content management, all running on Cloudflare's edge infrastructure.
+**Production-ready Medusa + Payload CMS + Next.js 15 on Cloudflare Workers**
 
-## 🏗️ Architecture
+> Run a complete e-commerce stack for **$5/month** instead of $60/month on traditional platforms.
 
-- **Frontend**: Next.js 15 with React 19
-- **CMS**: Payload CMS 3.59.1 with Cloudflare D1 database
-- **E-commerce**: Medusa.js integration
-- **Storage**: Cloudflare R2 for media assets
-- **Database**: Cloudflare D1 (SQLite)
-- **Deployment**: Cloudflare Workers with OpenNext.js
-
-## 📚 Documentation
-
-### Core Guides
-- **[Pages Collection Guide](README_PAGES.md)** - Comprehensive guide to the flexible page builder system
-  - 7 content blocks (Hero, Products, Text, Gallery, CTA, Video, Testimonials)
-  - Backend implementation details
-  - Frontend patterns and examples
-  - Performance optimization strategies
-
-### Additional Documentation
-- **[Implementation Summary](IMPLEMENTATION_SUMMARY.md)** - Overview, features, and deployment checklist
-- **[Deployment Learnings](DEPLOYMENT_LEARNINGS.md)** - Production deployment issues and solutions
-  - OpenTelemetry exclusion for Cloudflare Workers
-  - Webpack vs Turbopack compatibility
-  - Quick health checks and troubleshooting
-- **[Next.js RSC Patterns](NEXTJS_RSC_PATTERNS.md)** - React Server Components architecture
-- **[Advanced Optimizations](ADVANCED_OPTIMIZATIONS.md)** - Performance tuning and caching
-- **[Build Pipeline](BUILD_PIPELINE.md)** - CI/CD workflow and build optimization
-- **[Security Enhancements](docs/SECURITY_ENHANCEMENTS.md)** - Security best practices
-
-### Architecture Decision Records (ADRs)
-- **[ADR Index](docs/adr/README.md)** - All architectural decisions
-- **[ADR 001: Pages Collection](docs/adr/001-pages-collection-architecture.md)** - Block-based page builder architecture
-
-## 🚀 How to Run
-
-### Prerequisites
-
-- Node.js 18.20.2+ or 20.9.0+
-- pnpm 9+ or 10+
-- Cloudflare account with Wrangler CLI
-
-### Local Development
-
-1. **Install dependencies:**
-   ```bash
-   pnpm install
-   ```
-
-2. **Authenticate with Cloudflare:**
-   ```bash
-   pnpm wrangler login
-   ```
-
-3. **Set up environment variables:**
-   Create a `.env.local` file with:
-   ```bash
-   PAYLOAD_SECRET=your-secret-key-here
-   DATABASE_URI=file:./dev.db
-   NEXT_PUBLIC_SERVER_URL=http://localhost:3000
-   NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
-   ```
-
-4. **Start the development server:**
-   ```bash
-   # Standard development
-   pnpm dev
-   
-   # Development with local port 8000
-   pnpm dev:local
-   
-   # Development with production environment
-   pnpm dev:cloud
-   ```
-
-5. **Access the application:**
-   - Storefront: http://localhost:3000
-   - Admin Panel: http://localhost:3000/admin
-
-### Production Deployment
-
-#### Manual Deployment
-```bash
-CLOUDFLARE_ENV=production pnpm run deploy:app
-```
-
-#### GitHub Actions CI/CD (Recommended)
-1. **Set up GitHub repository:**
-   ```bash
-   git remote add origin https://github.com/yourusername/cc3-storefront-cloudflare.git
-   git push -u origin main
-   ```
-
-2. **Configure GitHub Secrets:**
-   - Go to your GitHub repository → Settings → Secrets and variables → Actions
-   - Add the following secrets:
-     - `CLOUDFLARE_API_TOKEN`: Your Cloudflare API token
-     - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID
-
-3. **Automatic deployments:**
-   - Push to `main` branch triggers automatic deployment
-   - Pull requests trigger tests without deployment
-
-#### Current Live URLs
-- **Storefront**: https://cc3-storefront.ian-rothfuss.workers.dev/us
-- **Admin Panel**: https://cc3-storefront.ian-rothfuss.workers.dev/admin
-- **Medusa Backend**: https://casual-chic.medusajs.app
-
-## 🧪 How to Test
-
-### Run All Tests
-```bash
-pnpm test
-```
-
-### Run Integration Tests
-```bash
-pnpm test:int
-```
-
-### Run End-to-End Tests
-```bash
-pnpm test:e2e
-```
-
-### Run Tests with Coverage
-```bash
-pnpm test -- --coverage
-```
-
-### Test Secret Security Model
-
-This project implements a **security-first approach** to secrets management in CI/CD pipelines:
-
-#### 🔐 Production Secrets (GitHub Secrets)
-**NEVER** committed to version control. Stored securely in GitHub repository settings:
-- `PAYLOAD_SECRET`: Production CMS authentication key
-- `LOG_SECRET`: HMAC key for anonymizing user identifiers in logs (GDPR-compliant)
-- `CLOUDFLARE_API_TOKEN`: API access for deployments
-- `CLOUDFLARE_ACCOUNT_ID`: Account identifier
-
-**Access Control:**
-- ✅ Only available to `main` branch deployments
-- ✅ Never exposed in PR builds or logs
-- ✅ Automatically injected by GitHub Actions
-
-#### 🧪 Test Secrets (Hardcoded in Workflow)
-Intentionally **hardcoded in `.github/workflows/deploy.yml`** for PR testing:
-- `PAYLOAD_SECRET: test-secret-for-ci-d8f7e6a5b4c3d2e1f0a9b8c7d6e5f4a3`
-- `LOG_SECRET: test-log-secret-for-anonymizing-user-ids-in-tests`
-
-**Why Hardcoded?**
-1. **PR Testing**: Pull requests cannot access GitHub Secrets (security feature)
-2. **Non-Sensitive**: These secrets are ONLY used for test execution, never production
-3. **Reproducibility**: Any developer can run tests locally with the same values
-4. **Transparency**: Security through design, not obscurity
-
-**Workflow Logic:**
-```yaml
-# Production build (main branch)
-- name: Set environment variables
-  if: github.ref == 'refs/heads/main'
-  env:
-    PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}  # Real secret
-    LOG_SECRET: ${{ secrets.LOG_SECRET }}          # Real secret
-
-# PR build (all other branches)
-- name: Set test environment variables
-  if: github.ref != 'refs/heads/main'
-  env:
-    PAYLOAD_SECRET: test-secret-for-ci-...  # Hardcoded test value
-    LOG_SECRET: test-log-secret-...         # Hardcoded test value
-```
-
-**Security Guarantees:**
-- ❌ Test secrets are NEVER used in production deployments
-- ❌ Test secrets grant NO access to production systems
-- ❌ Test secrets cannot access real user data
-- ✅ Production deployments ALWAYS use GitHub Secrets
-- ✅ Clear separation between test and production environments
-
-#### 🛡️ Best Practices
-1. **Never commit production secrets** to version control
-2. **Rotate production secrets regularly** (every 90 days recommended)
-3. **Use different secrets** for each environment (dev/staging/production)
-4. **Monitor secret usage** via GitHub Actions audit logs
-5. **Immediately rotate** if a secret is accidentally exposed
-
-#### 📊 Secret Usage Matrix
-
-| Secret | PR Builds | Main Branch | Source | Purpose |
-|--------|-----------|-------------|--------|---------|
-| `PAYLOAD_SECRET` | Hardcoded test value | GitHub Secret | `.github/workflows/deploy.yml` | CMS auth |
-| `LOG_SECRET` | Hardcoded test value | GitHub Secret | `.github/workflows/deploy.yml` | PII anonymization |
-| `CLOUDFLARE_API_TOKEN` | ❌ Not used | GitHub Secret | Repository settings | Deployment auth |
-| `CLOUDFLARE_ACCOUNT_ID` | ❌ Not used | GitHub Secret | Repository settings | Account ID |
-
-## 📁 Project Structure
-
-```
-src/
-├── app/                    # Next.js app router
-│   ├── (frontend)/        # Main frontend routes
-│   ├── (payload)/         # Payload CMS admin
-│   └── (storefront)/      # E-commerce storefront
-├── collections/           # Payload CMS collections
-├── lib/                   # Utility libraries
-│   ├── data/             # Data fetching functions
-│   ├── hooks/            # Custom React hooks
-│   └── util/             # Utility functions
-├── modules/              # Feature modules
-│   ├── account/          # User account management
-│   ├── cart/             # Shopping cart functionality
-│   ├── checkout/         # Checkout process
-│   ├── products/         # Product display
-│   └── layout/           # Layout components
-└── styles/               # Global styles
-```
-
-## 🛠️ Available Scripts
-
-- `pnpm dev` - Start development server
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
-- `pnpm lint` - Run ESLint
-- `pnpm test` - Run all tests
-- `pnpm deploy` - Deploy to Cloudflare
-- `pnpm payload` - Access Payload CLI
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `PAYLOAD_SECRET` | Secret key for Payload CMS | Yes |
-| `DATABASE_URI` | Database connection string | Yes |
-| `NEXT_PUBLIC_SERVER_URL` | Public server URL | Yes |
-| `NEXT_PUBLIC_MEDUSA_BACKEND_URL` | Medusa backend URL | Yes |
-| `ALLOWED_REDIRECT_DOMAINS` | Comma-separated whitelist of allowed redirect domains (e.g., `example.com,trusted-site.org`) for URL validation security | No |
-
-### Cloudflare Configuration
-
-The project is configured to work with:
-- **D1 Database**: For Payload CMS data storage
-- **R2 Storage**: For media assets and uploads
-- **Workers**: For serverless deployment
-
-## 📦 Key Features
-
-- 🛒 **Full E-commerce**: Product catalog, cart, checkout, orders
-- 👤 **User Management**: Registration, login, account management
-- 📱 **Responsive Design**: Mobile-first approach
-- 🎨 **Modern UI**: Built with Tailwind CSS and Radix UI
-- ⚡ **Edge Performance**: Deployed on Cloudflare's global network
-- 🔒 **Secure**: Built-in authentication and authorization
-- 📊 **Admin Panel**: Payload CMS for content management
-
-## ✅ Current Status
-
-**🎉 FULLY FUNCTIONAL DEPLOYMENT**
-- ✅ **Storefront**: Working with Medusa integration
-- ✅ **Admin Panel**: Payload CMS fully functional
-- ✅ **Database**: D1 SQLite database connected
-- ✅ **Storage**: R2 bucket for media assets
-- ✅ **Environment**: Properly configured for production
-
-## 🔑 Key Learnings
-
-### Critical Discovery: Publishable Keys vs Secrets
-- **❌ WRONG**: Treating publishable keys as Cloudflare secrets
-- **✅ CORRECT**: Configure as regular environment variables in `wrangler.jsonc`
-- **Why**: Publishable keys are meant to be public and accessible to client-side code
-
-### Environment Variable Access
-- Required `nodejs_compat_populate_process_env` flag in Cloudflare Workers
-- Temporary solution: Hardcoded publishable keys in data files
-- Next step: Investigate proper runtime environment variable access
-
-### Database Binding Configuration
-- Database binding names must match between `wrangler.jsonc` and `payload.config.ts`
-- Current: `"DB"` binding for D1 database
-
-📖 **See [DEPLOYMENT_LEARNINGS.md](./DEPLOYMENT_LEARNINGS.md) for comprehensive documentation**
-
-## 🚀 Deployment
-
-This project is optimized for Cloudflare Workers deployment:
-
-1. **Cost Effective**: ~$5/month vs $40-60/month on other platforms
-2. **Global Performance**: Edge deployment worldwide
-3. **Automatic Scaling**: Serverless architecture
-4. **Integrated Services**: D1, R2, and Workers in one platform
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests to ensure everything works
-5. Submit a pull request
-
-## 📄 License
-
-This project is proprietary software owned by Casual Chic Commerce LLC.
-
-## 📚 Documentation
-
-### Operational Guides
-- 📖 [Deployment Guide](./DEPLOYMENT_STEPS.md) - Step-by-step deployment instructions
-- 📖 [Deployment Learnings](./DEPLOYMENT_LEARNINGS.md) - Key insights and lessons learned
-- 🚨 [Orphaned Auth Runbook](./docs/RUNBOOK_ORPHANED_AUTH.md) - Handling orphaned auth identities
-- 📊 [Monitoring Setup](./docs/MONITORING_SETUP.md) - Alert configuration and dashboards
-- 💡 [Recommendations](./docs/RECOMMENDATIONS.md) - Future improvements and priorities
-- 🔒 [Security Enhancements](./docs/SECURITY_ENHANCEMENTS.md) - Required security features before high-traffic deployment
-
-### Development
-- Test Secret Security Model - See [Testing section](#test-secret-security-model) above
-- Architecture & Structure - See [Project Structure](#-project-structure) above
-- 📦 [pnpm Hoisting Analysis](./docs/PNPM_HOISTING_ANALYSIS.md) - Should you use hoisted mode?
-- ⚙️ [GitHub Actions Workflow Optimization](./docs/WORKFLOW_OPTIMIZATION.md) - CI/CD best practices and caching strategy
-
-## 🆘 Support
-
-For support and questions:
-- Check the [deployment guide](./DEPLOYMENT_STEPS.md)
-- Review the [runbooks](./docs/) for operational issues
-- Review Cloudflare Workers documentation
-- Contact the development team
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+[![Payload CMS 3](https://img.shields.io/badge/Payload-3.61-blue)](https://payloadcms.com/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-orange)](https://workers.cloudflare.com/)
 
 ---
 
-Built with ❤️ by Ian Rothfuss and Casual Chic Commerce LLC
+## 🎯 Why Damascus?
 
-<!-- CI/CD Test - Automated deployment via GitHub Actions -->
+Damascus is the **first production-ready** implementation of Medusa.js e-commerce with Payload CMS running on Cloudflare Workers. We solved the hard problems so you don't have to:
+
+- ✅ **Virtual filesystem** for Cloudflare Workers (no traditional file access)
+- ✅ **Custom build patches** for Next.js compatibility
+- ✅ **Edge runtime middleware** that actually works
+- ✅ **D1 + R2 integration** with Payload CMS
+- ✅ **12x cost reduction** vs Vercel/Railway
+
+### The Problem We Solved
+
+Traditional e-commerce stacks require Docker, VPS hosting, or expensive serverless platforms ($40-60/month minimum). Running Next.js + Payload + Medusa on Cloudflare Workers requires solving several technical challenges:
+
+1. **No filesystem access** - Workers can't read files at runtime
+2. **Import.meta.url undefined** - Breaks many Node.js modules
+3. **Edge runtime limitations** - Dynamic code generation not allowed
+4. **Build tool incompatibilities** - OpenNext.js needs patching for Workers
+
+Damascus solves all of these with production-tested solutions.
+
+---
+
+## 💰 Cost Comparison
+
+| Platform | Monthly Cost | Notes |
+|----------|--------------|-------|
+| **Cloudflare Workers** (Damascus) | **~$5** | D1 + R2 + Workers included |
+| Vercel | $40-60 | Hobby limits too restrictive |
+| Railway | $50-80 | Per-service pricing |
+| DigitalOcean + Docker | $30-50 | Manual DevOps required |
+
+---
+
+## 🏗️ Architecture
+
+- **Frontend**: Next.js 15 with React 19 (Server Components)
+- **CMS**: Payload CMS 3.61 with D1 SQLite database
+- **E-commerce**: Medusa.js backend integration
+- **Storage**: Cloudflare R2 for media assets
+- **Database**: Cloudflare D1 (distributed SQLite)
+- **Deployment**: Cloudflare Workers via OpenNext.js
+
+### Key Technical Innovations
+
+1. **Virtual Filesystem** (`scripts/patch-middleware-handler.cjs`)
+   - Inlines all Next.js manifest files into the worker bundle
+   - Intercepts `fs.readFileSync()` calls to serve from memory
+   - Solves Workers' lack of traditional filesystem access
+
+2. **Build Patches**
+   - `scripts/patch-opentelemetry.cjs` - Removes telemetry (breaks in Workers)
+   - `scripts/patch-middleware-tracer.cjs` - Fixes middleware bundling
+   - `scripts/patch-middleware-handler.cjs` - Handles `import.meta.url` edge cases
+
+3. **Edge-Compatible Middleware**
+   - No dynamic code generation (`eval()`)
+   - Simplified routing for Workers runtime
+   - Compatible with Cloudflare's V8 isolates
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 20.19.0+
+- pnpm 9+ or 10+
+- Cloudflare account (free tier works)
+- Medusa backend (use [Medusa Cloud](https://medusajs.com/cloud/) or self-host)
+
+### 1. Clone & Install
+
+```bash
+git clone https://github.com/casualchic/medusa-payload-cloudflare.git
+cd medusa-payload-cloudflare
+pnpm install
+```
+
+### 2. Configure Environment
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local`:
+
+```bash
+# Generate with: openssl rand -hex 32
+PAYLOAD_SECRET=your-secret-here
+
+# Your Medusa backend URL
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://your-medusa-backend.com
+NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_your-key-here
+
+# Optional: For GDPR-compliant logging
+LOG_SECRET=your-log-secret-here
+```
+
+### 3. Local Development
+
+```bash
+# Start dev server
+pnpm dev
+
+# Access at:
+# - Storefront: http://localhost:3000
+# - Admin Panel: http://localhost:3000/admin
+```
+
+### 4. Deploy to Cloudflare
+
+```bash
+# Authenticate
+pnpm wrangler login
+
+# Deploy (first time - creates D1 database & R2 bucket)
+CLOUDFLARE_ENV=production pnpm run deploy
+
+# Subsequent deploys
+CLOUDFLARE_ENV=production pnpm run deploy:app
+```
+
+---
+
+## 📦 What's Included
+
+### ✅ Full E-commerce Features
+- Product catalog with variants (size, color, etc.)
+- Shopping cart with persistent state
+- Multi-region support
+- Customer accounts & order history
+- Payment integration (Stripe ready)
+- Responsive design (mobile-first)
+
+### ✅ Content Management
+- Payload CMS admin panel
+- Flexible page builder with 7 content blocks:
+  - Hero sections
+  - Product showcases
+  - Text content
+  - Image galleries
+  - CTAs
+  - Video embeds
+  - Testimonials
+- R2-backed media library
+- Version history & drafts
+
+### ✅ Production Ready
+- GitHub Actions CI/CD
+- Comprehensive test suite (unit, integration, E2E)
+- Security best practices
+- Performance optimizations
+- Monitoring setup guides
+
+---
+
+## 📚 Documentation
+
+### Getting Started
+- [Quick Start](#-quick-start) - Get running in 5 minutes
+- [Environment Variables](docs/environment-variables.md) - Complete configuration guide
+- [Deployment Guide](DEPLOYMENT_STEPS.md) - Step-by-step production deployment
+
+### Architecture & Development
+- [Pages Collection Guide](README_PAGES.md) - Flexible page builder system
+- [Next.js RSC Patterns](NEXTJS_RSC_PATTERNS.md) - Server Components architecture
+- [Deployment Learnings](DEPLOYMENT_LEARNINGS.md) - Key insights and solutions
+
+### Operations
+- [Monitoring Setup](docs/MONITORING_SETUP.md) - Alerts and dashboards
+- [Security Enhancements](docs/SECURITY_ENHANCEMENTS.md) - Production hardening
+- [Runbooks](docs/) - Operational procedures
+
+### Advanced
+- [Build Pipeline](BUILD_PIPELINE.md) - CI/CD and build optimization
+- [Advanced Optimizations](ADVANCED_OPTIMIZATIONS.md) - Performance tuning
+- [ADRs](docs/adr/) - Architectural decision records
+
+---
+
+## 🔧 Configuration
+
+### Cloudflare Resources
+
+Damascus automatically provisions:
+
+- **D1 Database** - For Payload CMS data
+- **R2 Bucket** - For media uploads
+- **Workers** - For serverless compute
+
+Configure in `wrangler.jsonc`:
+
+```jsonc
+{
+  "name": "your-project-name",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "nodejs_compat_populate_process_env"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "your-db-name"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "your-bucket-name"
+    }
+  ]
+}
+```
+
+### Medusa Backend
+
+You need a Medusa backend. Options:
+
+1. **Medusa Cloud** (recommended for quick start)
+   - Sign up at [medusajs.com/cloud](https://medusajs.com/cloud/)
+   - Get publishable key from admin dashboard
+
+2. **Self-hosted**
+   - Follow [Medusa documentation](https://docs.medusajs.com/)
+   - Deploy to Railway, Render, or DigitalOcean
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+pnpm test
+
+# Individual test suites
+pnpm test:unit        # Unit tests
+pnpm test:int         # Integration tests
+pnpm test:workflows   # GitHub Actions workflow tests
+pnpm test:e2e         # End-to-end (Playwright)
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Damascus is open source because we believe in sharing knowledge and building together.
+
+### How to Contribute
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests (`pnpm test`)
+5. Commit with conventional commits (`feat:`, `fix:`, `docs:`, etc.)
+6. Push and create a Pull Request
+
+### Areas We'd Love Help With
+
+- 🐛 Bug fixes and edge case handling
+- 📝 Documentation improvements
+- ✨ New Payload blocks/features
+- 🎨 UI/UX enhancements
+- 🔧 Cloudflare Workers optimizations
+- 🌍 Internationalization
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## 💼 Professional Services
+
+Need help implementing Damascus for your business?
+
+- **Quick Start Package** - Setup assistance and configuration
+- **Custom Implementation** - Full design and integration
+- **Ongoing Support** - Maintenance and updates
+
+Contact: [Your contact info - update this]
+
+---
+
+## 🗺️ Roadmap
+
+### Current (v1.0)
+- ✅ Production-ready deployment
+- ✅ Full e-commerce features
+- ✅ Payload CMS integration
+- ✅ Comprehensive documentation
+
+### Planned (v1.1+)
+- [ ] Payment provider examples (Stripe, PayPal)
+- [ ] Multi-language support (i18n)
+- [ ] Analytics integration guides
+- [ ] More Payload blocks (FAQ, Blog, etc.)
+- [ ] Storybook component library
+- [ ] One-click deploy button
+
+See [Issues](https://github.com/casualchic/medusa-payload-cloudflare/issues) for full roadmap.
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+Built with ❤️ by [Ian Rothfuss](https://github.com/ianrothfuss)
+
+---
+
+## 🙏 Acknowledgments
+
+Damascus builds on incredible open source projects:
+
+- [Next.js](https://nextjs.org/) - The React framework
+- [Payload CMS](https://payloadcms.com/) - Headless CMS
+- [Medusa.js](https://medusajs.com/) - E-commerce engine
+- [OpenNext.js](https://opennext.js.org/) - Cloudflare Workers adapter
+- [Cloudflare](https://cloudflare.com/) - Edge infrastructure
+
+---
+
+## ⭐ Star History
+
+If Damascus helps you, please consider starring the repo! It helps others discover the project.
+
+---
+
+## 🔗 Links
+
+- [Documentation](https://github.com/casualchic/medusa-payload-cloudflare/tree/main/docs)
+- [Issues](https://github.com/casualchic/medusa-payload-cloudflare/issues)
+- [Discussions](https://github.com/casualchic/medusa-payload-cloudflare/discussions)
+- [Changelog](CHANGELOG.md)
+
+---
+
+**Damascus** - *Named after Damascus steel: strong, sharp, and refined through meticulous craftsmanship.*

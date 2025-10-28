@@ -1,17 +1,29 @@
 {
-  "name": "casual-chic-boutique-cloudflare",
-  "version": "3.0.0",
-  "private": true,
+  "name": "medusa-payload-cloudflare",
+  "version": "1.0.0",
+  "private": false,
   "type": "module",
-  "author": "Ian Rothfuss and Casual Chic Commerce LLC",
-  "description": "Casual Chic Boutique Storefront with Payload CMS on Cloudflare",
+  "author": "Ian Rothfuss",
+  "description": "Damascus: Production-ready Medusa + Payload CMS + Next.js 15 on Cloudflare Workers. Run a full e-commerce stack for $5/month.",
   "keywords": [
+    "medusa",
     "medusa-storefront",
     "payload-cms",
     "cloudflare",
-    "casual-chic-boutique",
-    "casual-chic-commerce"
+    "cloudflare-workers",
+    "nextjs",
+    "ecommerce",
+    "edge-computing",
+    "damascus"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/casualchic/medusa-payload-cloudflare.git"
+  },
+  "bugs": {
+    "url": "https://github.com/casualchic/medusa-payload-cloudflare/issues"
+  },
+  "homepage": "https://github.com/casualchic/medusa-payload-cloudflare#readme",
   "scripts": {
     "predev": "node scripts/verify-dependencies.cjs",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
