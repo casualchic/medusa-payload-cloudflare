@@ -6,7 +6,7 @@
 > Run a complete e-commerce stack for **$5/month** instead of $60/month
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Next.js 15](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+[![Next.js 16](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
 [![Payload CMS 3](https://img.shields.io/badge/Payload-3.61-blue)](https://payloadcms.com/)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-orange)](https://workers.cloudflare.com/)
 
@@ -84,7 +84,7 @@ Meridian solves all of these with production-tested solutions.
 
 - Node.js 20.19.0+
 - pnpm 9+ or 10+
-- Cloudflare account (free tier works)
+- Cloudflare account ($5 paid workers plan)
 - Medusa backend (use [Medusa Cloud](https://medusajs.com/cloud/) or self-host)
 
 ### 1. Clone & Install
