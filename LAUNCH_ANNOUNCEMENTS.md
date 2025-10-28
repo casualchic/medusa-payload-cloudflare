@@ -1,6 +1,6 @@
-# Damascus Launch Announcements
+# Meridian Launch Announcements
 
-Copy-paste templates for announcing Damascus across different platforms.
+Copy-paste templates for announcing Meridian across different platforms.
 
 ---
 
@@ -8,7 +8,7 @@ Copy-paste templates for announcing Damascus across different platforms.
 
 ### Tweet 1 (Hook)
 ```
-🚀 Launching Damascus: Run Medusa + Payload CMS + Next.js 15 on Cloudflare Workers for $5/month
+🚀 Launching Meridian: Run Medusa + Payload CMS + Next.js 15 on Cloudflare Workers for $5/month
 
 We solved the hard problems so you don't have to.
 
@@ -29,7 +29,7 @@ There had to be a better way.
 
 ### Tweet 3 (Solution)
 ```
-Damascus runs on Cloudflare Workers + D1 + R2
+Meridian runs on Cloudflare Workers + D1 + R2
 
 Total cost: ~$5/month
 Global edge deployment
@@ -83,10 +83,10 @@ Questions? Drop them below 👇
 ## 📝 Reddit Posts
 
 ### r/nextjs
-**Title:** Damascus: Production-ready Medusa + Payload + Next.js 15 on Cloudflare Workers ($5/month)
+**Title:** Meridian: Production-ready Medusa + Payload + Next.js 15 on Cloudflare Workers ($5/month)
 
 ```markdown
-Hey r/nextjs! I just open sourced Damascus - a complete e-commerce stack running on Cloudflare Workers.
+Hey r/nextjs! I just open sourced Meridian - a complete e-commerce stack running on Cloudflare Workers.
 
 ## What is it?
 
@@ -232,10 +232,10 @@ Questions welcome!
 
 ## 💬 Hacker News Post
 
-**Title:** Damascus: Production e-commerce stack on Cloudflare Workers for $5/month
+**Title:** Meridian: Production e-commerce stack on Cloudflare Workers for $5/month
 
 ```
-Hi HN! I'm sharing Damascus, a production-ready e-commerce stack built on Cloudflare Workers that costs ~$5/month to run instead of the typical $60+.
+Hi HN! I'm sharing Meridian, a production-ready e-commerce stack built on Cloudflare Workers that costs ~$5/month to run instead of the typical $60+.
 
 GitHub: https://github.com/casualchic/medusa-payload-cloudflare
 
@@ -300,7 +300,7 @@ I'm happy to answer questions about the architecture, implementation challenges,
 ```
 👋 Hey everyone! Just open sourced a complete Medusa storefront running on Cloudflare Workers for ~$5/month
 
-**Damascus: Medusa + Payload CMS + Next.js 15 on Workers**
+**Meridian: Medusa + Payload CMS + Next.js 15 on Workers**
 https://github.com/casualchic/medusa-payload-cloudflare
 
 **Why this is cool:**
@@ -326,7 +326,7 @@ Questions? Want to contribute? Check out the repo!
 ## 💼 LinkedIn Post
 
 ```
-🚀 Excited to announce Damascus - my latest open source project!
+🚀 Excited to announce Meridian - my latest open source project!
 
 After months of battling with hosting costs for e-commerce sites, I built a complete stack on Cloudflare Workers that costs ~$5/month instead of the typical $60+.
 
@@ -357,14 +357,14 @@ MIT licensed. Contributions welcome!
 
 ## 📧 Email to Payload Team
 
-**Subject:** Damascus: Production Payload + Medusa on Cloudflare Workers (OSS)
+**Subject:** Meridian: Production Payload + Medusa on Cloudflare Workers (OSS)
 
 ```
 Hey Payload Team,
 
 Hope you're doing well! I wanted to share a project I just open sourced that might interest the community.
 
-**Damascus** is a production-ready implementation of Payload CMS + Medusa e-commerce + Next.js 15 running on Cloudflare Workers.
+**Meridian** is a production-ready implementation of Payload CMS + Medusa e-commerce + Next.js 15 running on Cloudflare Workers.
 
 GitHub: https://github.com/casualchic/medusa-payload-cloudflare
 
@@ -471,7 +471,7 @@ Before posting announcements:
 
 ```
 [Screen: GitHub repo]
-"This is Damascus - a complete e-commerce stack running on Cloudflare Workers for $5 a month."
+"This is Meridian - a complete e-commerce stack running on Cloudflare Workers for $5 a month."
 
 [Screen: Cost comparison chart]
 "Compare that to $60/month on Vercel or $80/month on Railway."

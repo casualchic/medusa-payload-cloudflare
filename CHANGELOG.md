@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Damascus will be documented in this file.
+All notable changes to Meridian will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎉 Initial Open Source Release
 
-Damascus is now open source! This is the first production-ready implementation of Medusa + Payload CMS + Next.js 15 on Cloudflare Workers.
+Meridian is now open source! This is the first production-ready implementation of Medusa + Payload CMS + Next.js 15 on Cloudflare Workers.
 
 ### ✨ Features
 

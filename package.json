@@ -1,10 +1,10 @@
 {
-  "name": "medusa-payload-cloudflare",
+  "name": "meridian",
   "version": "1.0.0",
   "private": false,
   "type": "module",
   "author": "Ian Rothfuss",
-  "description": "Damascus: Production-ready Medusa + Payload CMS + Next.js 15 on Cloudflare Workers. Run a full e-commerce stack for $5/month.",
+  "description": "Meridian: The optimal point for edge commerce. Production-ready Medusa + Payload CMS + Next.js 15 on Cloudflare Workers for $5/month.",
   "keywords": [
     "medusa",
     "medusa-storefront",
@@ -14,7 +14,8 @@
     "nextjs",
     "ecommerce",
     "edge-computing",
-    "damascus"
+    "meridian",
+    "edge-commerce"
   ],
   "repository": {
     "type": "git",

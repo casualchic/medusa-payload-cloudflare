@@ -1,8 +1,9 @@
-# Damascus
+# Meridian
 
-**Production-ready Medusa + Payload CMS + Next.js 15 on Cloudflare Workers**
+**The optimal point for edge commerce**
 
-> Run a complete e-commerce stack for **$5/month** instead of $60/month on traditional platforms.
+> Production-ready Medusa + Payload CMS + Next.js 15 on Cloudflare Workers
+> Run a complete e-commerce stack for **$5/month** instead of $60/month
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js 15](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
@@ -11,9 +12,11 @@
 
 ---
 
-## 🎯 Why Damascus?
+## 🎯 Why Meridian?
 
-Damascus is the **first production-ready** implementation of Medusa.js e-commerce with Payload CMS running on Cloudflare Workers. We solved the hard problems so you don't have to:
+Just as a **meridian** represents the sun's highest point—peak performance—**Meridian Commerce** achieves the optimal balance between enterprise features and startup costs.
+
+Meridian is the **first production-ready** implementation of Medusa.js e-commerce with Payload CMS running on Cloudflare Workers. We solved the hard problems so you don't have to:
 
 - ✅ **Virtual filesystem** for Cloudflare Workers (no traditional file access)
 - ✅ **Custom build patches** for Next.js compatibility
@@ -30,7 +33,7 @@ Traditional e-commerce stacks require Docker, VPS hosting, or expensive serverle
 3. **Edge runtime limitations** - Dynamic code generation not allowed
 4. **Build tool incompatibilities** - OpenNext.js needs patching for Workers
 
-Damascus solves all of these with production-tested solutions.
+Meridian solves all of these with production-tested solutions.
 
 ---
 
@@ -38,10 +41,12 @@ Damascus solves all of these with production-tested solutions.
 
 | Platform | Monthly Cost | Notes |
 |----------|--------------|-------|
-| **Cloudflare Workers** (Damascus) | **~$5** | D1 + R2 + Workers included |
+| **Cloudflare Workers** (Meridian) | **~$5** | D1 + R2 + Workers included |
 | Vercel | $40-60 | Hobby limits too restrictive |
 | Railway | $50-80 | Per-service pricing |
 | DigitalOcean + Docker | $30-50 | Manual DevOps required |
+
+**The Meridian advantage:** Peak performance at the optimal price point.
 
 ---
 
@@ -85,8 +90,8 @@ Damascus solves all of these with production-tested solutions.
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/casualchic/medusa-payload-cloudflare.git
-cd medusa-payload-cloudflare
+git clone https://github.com/casualchic/medusa-payload-cloudflare.git meridian
+cd meridian
 pnpm install
 ```
 
@@ -196,7 +201,7 @@ CLOUDFLARE_ENV=production pnpm run deploy:app
 
 ### Cloudflare Resources
 
-Damascus automatically provisions:
+Meridian automatically provisions:
 
 - **D1 Database** - For Payload CMS data
 - **R2 Bucket** - For media uploads
@@ -257,7 +262,7 @@ pnpm test:e2e         # End-to-end (Playwright)
 
 ## 🤝 Contributing
 
-Contributions welcome! Damascus is open source because we believe in sharing knowledge and building together.
+Contributions welcome! Meridian is open source because we believe in sharing knowledge and building together.
 
 ### How to Contribute
 
@@ -283,7 +288,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 💼 Professional Services
 
-Need help implementing Damascus for your business?
+Need help implementing Meridian for your business?
 
 - **Quick Start Package** - Setup assistance and configuration
 - **Custom Implementation** - Full design and integration
@@ -323,7 +328,7 @@ Built with ❤️ by [Ian Rothfuss](https://github.com/ianrothfuss)
 
 ## 🙏 Acknowledgments
 
-Damascus builds on incredible open source projects:
+Meridian builds on incredible open source projects:
 
 - [Next.js](https://nextjs.org/) - The React framework
 - [Payload CMS](https://payloadcms.com/) - Headless CMS
@@ -335,7 +340,7 @@ Damascus builds on incredible open source projects:
 
 ## ⭐ Star History
 
-If Damascus helps you, please consider starring the repo! It helps others discover the project.
+If Meridian helps you build better commerce experiences, please consider starring the repo!
 
 ---
 
@@ -348,4 +353,6 @@ If Damascus helps you, please consider starring the repo! It helps others discov
 
 ---
 
-**Damascus** - *Named after Damascus steel: strong, sharp, and refined through meticulous craftsmanship.*
+**Meridian** - *The optimal point for edge commerce*
+
+*Just as a meridian represents the sun's highest point, Meridian Commerce represents the peak of e-commerce efficiency—maximum performance at minimum cost.*

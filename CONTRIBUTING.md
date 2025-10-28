@@ -1,10 +1,10 @@
-# Contributing to Damascus
+# Contributing to Meridian
 
-First off, thank you for considering contributing to Damascus! It's people like you that make Damascus such a great tool for the community.
+First off, thank you for considering contributing to Meridian! It's people like you that make Meridian such a great tool for the community.
 
 ## 🎯 Our Philosophy
 
-Damascus exists to solve real problems faced by developers building modern e-commerce on the edge. We value:
+Meridian exists to solve real problems faced by developers building modern e-commerce on the edge. We value:
 
 - **Practical solutions** over theoretical perfection
 - **Clear documentation** over clever code
@@ -408,6 +408,6 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-**Thank you for making Damascus better!** 🎉
+**Thank you for making Meridian better!** 🎉
 
 Every contribution, no matter how small, helps the community build better e-commerce experiences on the edge.
