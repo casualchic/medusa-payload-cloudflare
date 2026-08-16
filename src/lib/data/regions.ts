@@ -111,29 +111,10 @@ export const getRegion = async (countryCode: string) => {
   } catch (e: unknown) {
     console.error('Error in getRegion:', e instanceof Error ? e.message : String(e))
 
-    // Return a fallback region when backend is not accessible
-    return {
-      id: countryCode,
-      name: countryCode === 'us' ? 'United States' : countryCode.toUpperCase(),
-      countries: [
-        {
-          id: countryCode,
-          iso_2: countryCode,
-          // Map common 2-letter codes to proper ISO 3166-1 alpha-3 codes
-          iso_3: countryCode === 'us' ? 'usa' : countryCode === 'gb' ? 'gbr' : countryCode === 'ca' ? 'can' : countryCode.toUpperCase(),
-          name: countryCode === 'us' ? 'United States' : countryCode.toUpperCase(),
-        },
-      ],
-      currency_code: 'usd',
-      tax_rate: 0,
-      tax_code: null,
-      gift_cards_taxable: false,
-      automatic_taxes: false,
-      includes_tax: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      deleted_at: null,
-      metadata: {},
-    } as HttpTypes.StoreRegion
+    // Do not fabricate a region. A hand-built object carries `id: countryCode`,
+    // which is not a real region id. Callers send it to the backend as
+    // `region_id`, and the backend then fails the pricing context. Return null
+    // so callers handle the failure at the boundary.
+    return null
   }
 }
