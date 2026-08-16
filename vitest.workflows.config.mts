@@ -8,7 +8,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
  * to ensure CI/CD configuration is correct.
  */
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  plugins: [tsconfigPaths({ projects: ['./tsconfig.test.json'] })],
   test: {
     environment: 'node',
     include: ['tests/workflows/**/*.test.ts'],

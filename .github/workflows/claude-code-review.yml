@@ -31,8 +31,9 @@ jobs:
         with:
           fetch-depth: 1
 
-      # Note: Using @v1 (not pinned SHA) for Anthropic's official action
-      # to receive automatic security updates and bug fixes
+      # Pinned to a full commit SHA per the org's actions policy; the trailing
+      # comment records the release the SHA corresponds to. Update by
+      # bumping the SHA (Dependabot keeps SHA pins current).
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@9d7150bc8a3dae8149739a88019d192b579ad90c # v1.0.193

@@ -9,7 +9,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
  * For workflow tests, see vitest.workflows.config.mts
  */
 export default defineConfig({
-  plugins: [tsconfigPaths(), react()],
+  plugins: [tsconfigPaths({ projects: ['./tsconfig.test.json'] }), react()],
   test: {
     // Use node environment for API integration tests (not jsdom)
     // jsdom is for UI component tests, node is for API/backend tests

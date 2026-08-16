@@ -1,0 +1,9 @@
+{
+  // Used by the Vitest configs (via vite-tsconfig-paths) so that path
+  // aliases like @lib/* resolve from test files. The base tsconfig.json
+  // excludes **/*.test.ts / **/*.spec.ts to keep them out of the Next.js
+  // build, but vite-tsconfig-paths only applies aliases to files that are
+  // part of its tsconfig project — so tests need a project that includes them.
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", ".next", ".nyc_output", "coverage", "jest-coverage"]
+}
