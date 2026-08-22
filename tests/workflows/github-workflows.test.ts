@@ -66,13 +66,13 @@ describe('GitHub Workflows Validation', () => {
 
     it('should checkout repository with shallow fetch', () => {
       expect(claudeWorkflowContent).toContain('- name: Checkout repository')
-      expect(claudeWorkflowContent).toContain('uses: actions/checkout@v4')
+      expect(claudeWorkflowContent).toMatch(/uses: actions\/checkout@[0-9a-f]{40} # v4/)
       expect(claudeWorkflowContent).toContain('fetch-depth: 1')
     })
 
     it('should use Claude Code Action', () => {
       expect(claudeWorkflowContent).toContain('- name: Run Claude Code Review')
-      expect(claudeWorkflowContent).toContain('uses: anthropics/claude-code-action@v1')
+      expect(claudeWorkflowContent).toMatch(/uses: anthropics\/claude-code-action@[0-9a-f]{40} # v1/)
     })
 
     it('should use secret for Claude OAuth token', () => {
@@ -170,12 +170,12 @@ describe('GitHub Workflows Validation', () => {
 
     it('should checkout code', () => {
       expect(deployWorkflowContent).toContain('- name: Checkout code')
-      expect(deployWorkflowContent).toContain('uses: actions/checkout@v4')
+      expect(deployWorkflowContent).toMatch(/uses: actions\/checkout@[0-9a-f]{40} # v4/)
     })
 
     it('should setup Node.js version 20', () => {
       expect(deployWorkflowContent).toContain('- name: Setup Node.js')
-      expect(deployWorkflowContent).toContain('uses: actions/setup-node@v4')
+      expect(deployWorkflowContent).toMatch(/uses: actions\/setup-node@[0-9a-f]{40} # v4/)
       expect(deployWorkflowContent).toContain("node-version: '20'")
     })
 
@@ -199,7 +199,7 @@ describe('GitHub Workflows Validation', () => {
         deployWorkflowContent.match(/- name: Cache Next\.js build[\s\S]*?(?=\n    - name:|$)/)?.[0] || ''
 
       expect(nextjsCacheSection).toContain('- name: Cache Next.js build')
-      expect(nextjsCacheSection).toContain('uses: actions/cache@v4')
+      expect(nextjsCacheSection).toMatch(/uses: actions\/cache@[0-9a-f]{40} # v4/)
       expect(nextjsCacheSection).toContain('path: .next/cache')
       // Cache key should include Node.js version to avoid stale caches after Node upgrades
       expect(nextjsCacheSection).toContain('node20-nextjs')
@@ -273,13 +273,13 @@ describe('GitHub Workflows Validation', () => {
     it('should have separate build steps for production and PRs', () => {
       // Production build step
       const productionBuildSection = deployWorkflowContent.match(/- name: Build Next\.js application \(Production\)[\s\S]*?(?=\n    # |    - name:|$)/)?.[0] || ''
-      expect(productionBuildSection).toContain("if: github.ref == 'refs/heads/main'")
+      expect(productionBuildSection).toContain("if: github.event_name == 'push' && github.ref == 'refs/heads/main'")
       expect(productionBuildSection).toContain('PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}')
       expect(productionBuildSection).not.toMatch(/PAYLOAD_SECRET:\s+[0-9a-f]{64}/)
 
       // PR build step
       const prBuildSection = deployWorkflowContent.match(/- name: Build Next\.js application \(PR\)[\s\S]*?(?=\n    - name:|$)/)?.[0] || ''
-      expect(prBuildSection).toContain("if: github.ref != 'refs/heads/main'")
+      expect(prBuildSection).toContain("if: github.event_name == 'pull_request'")
       // PR builds use hardcoded test secret (64-char hex, matches production requirements)
       expect(prBuildSection).toMatch(/PAYLOAD_SECRET:\s+[0-9a-f]{64}/)
     })
@@ -297,7 +297,7 @@ describe('GitHub Workflows Validation', () => {
       const deploySection = deployWorkflowContent.match(/- name: Build and Deploy to Cloudflare Workers[\s\S]*?(?=\n  [a-z]|\n[a-z]|$)/)?.[0] || ''
       
       expect(deploySection).toContain('- name: Build and Deploy to Cloudflare Workers')
-      expect(deploySection).toContain("if: github.ref == 'refs/heads/main'")
+      expect(deploySection).toContain("if: github.event_name == 'push' && github.ref == 'refs/heads/main'")
     })
 
     it('should deploy to Cloudflare with proper secrets', () => {
@@ -427,7 +427,7 @@ describe('GitHub Workflows Validation', () => {
 
   describe('Optimization and Performance', () => {
     it('deploy workflow should implement caching strategy', () => {
-      const cacheCount = (deployWorkflowContent.match(/uses: actions\/cache@v4/g) || []).length
+      const cacheCount = (deployWorkflowContent.match(/uses: actions\/cache@[0-9a-f]{40}/g) || []).length
 
       // Should have at least 2 cache steps (Next.js + Vitest; pnpm uses setup-node built-in caching)
       expect(cacheCount).toBeGreaterThanOrEqual(2)

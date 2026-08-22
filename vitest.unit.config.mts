@@ -7,7 +7,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
  * Unit tests validate individual functions, components, and modules in isolation.
  */
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  plugins: [tsconfigPaths({ projects: ['./tsconfig.test.json'] })],
   test: {
     environment: 'node',
     include: ['tests/unit/**/*.test.ts'],
