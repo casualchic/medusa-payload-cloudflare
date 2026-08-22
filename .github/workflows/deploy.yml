@@ -66,7 +66,7 @@ jobs:
     # Cache Next.js build output for faster subsequent builds
     # Split cache keys to avoid hash collision issues with multiple patterns in single hashFiles()
     - name: Cache Next.js build
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: .next/cache
         key: ${{ runner.os }}-node20-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**/*.[jt]s*', 'app/**/*.[jt]s*') }}-${{ hashFiles('**/*.css', '**/*.scss') }}-${{ hashFiles('middleware.ts', 'next.config.*', 'open-next.config.*', 'payload.config.*', 'tailwind.config.*', 'postcss.config.*', 'tsconfig*.json') }}
@@ -98,7 +98,7 @@ jobs:
     # Vitest uses Vite cacheDir (default: node_modules/.vite)
     # Includes source files in cache key to invalidate when source code changes
     - name: Cache Vitest
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: node_modules/.vite
         key: vitest-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('vitest*.config.*', '{tests,src,app}/**') }}
